@@ -1,0 +1,25 @@
+# NetBirdPeer — declarative settings for a peer identified by hostname.
+# The lexicon entry makes this peer discoverable (by networkRouter/route)
+# via peerSelector.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  edge-peer-01:
+    type: netbird-peer
+    name: edge-peer-01
+    labels:
+      zone: edge
+      default: book
+
+glyphs:
+  netbird:
+    edge-peer-01:
+      type: peer
+      peerRef: edge-peer-01
+      sshEnabled: false
+      approvalRequired: true
+      loginExpirationEnabled: true

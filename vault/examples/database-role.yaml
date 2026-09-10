@@ -1,0 +1,48 @@
+# Test: low-level vault.databaseRole under an explicitly selected mount.
+# The per-engine chart supplies dBName + creationStatements; this glyph renders
+# the DatabaseSecretEngineRole that issues the dynamic credentials.
+
+name: database-role-test
+
+chapter:
+  name: databases
+
+spellbook:
+  name: test-book
+
+lexicon:
+  - type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    skipVerify: true
+    labels:
+      default: book
+
+glyphs:
+  vault:
+    # read-write role with the ownership-safe pattern (lazy stable owner +
+    # IN ROLE + SET ROLE) — objects stay owned by the stable role across rotation.
+    - type: databaseRole
+      name: myapp-rw
+      dBName: myapp
+      defaultTTL: "1h"
+      maxTTL: "24h"
+      creationStatements:
+        - >-
+          DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'myapp')
+          THEN CREATE ROLE "myapp" NOLOGIN; END IF; END $$;
+        - CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}' IN ROLE "myapp";
+        - ALTER ROLE "{{name}}" SET ROLE "myapp";
+        - GRANT ALL ON SCHEMA public TO "myapp";
+
+    # read-only role on the same mount/db.
+    - type: databaseRole
+      name: myapp-ro
+      dBName: myapp
+      creationStatements:
+        - CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';
+        - GRANT USAGE ON SCHEMA public TO "{{name}}";
+        - GRANT SELECT ON ALL TABLES IN SCHEMA public TO "{{name}}";

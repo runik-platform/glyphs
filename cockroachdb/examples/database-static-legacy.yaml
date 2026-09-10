@@ -1,0 +1,40 @@
+# Compatibility fixture for a static role still served by the shared mount.
+name: datalake
+chapter:
+  name: huly
+spellbook:
+  name: the-yaml-life
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+  crdb-infra:
+    type: cockroachdb
+    namespace: crdb-infra
+    host: crdb-infra-public.crdb-infra.svc
+    databaseMount: database
+    tls:
+      enabled: false
+    labels:
+      default: book
+glyphs:
+  cockroachdb:
+    huly:
+      type: database
+      databaseName: huly
+      credentials:
+        mode: static
+        username: huly
+        rotationPeriod: 86400
+        serviceAccount: huly
+  vault:
+    access:
+      type: prolicy
+      nameOverride: huly
+      serviceAccount: huly

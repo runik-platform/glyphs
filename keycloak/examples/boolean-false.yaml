@@ -1,0 +1,69 @@
+name: keycloak-boolean-false
+
+glyphs:
+  keycloak:
+    realm:
+      type: clusterRealm
+      name: realm-false
+      realmName: false-test
+      clusterKeycloakRef: keycloak
+      eventConfig:
+        eventsEnabled: false
+        adminEventsEnabled: false
+        adminEventsDetailsEnabled: false
+      tokenSettings:
+        revokeRefreshToken: false
+      sessions:
+        ssoSessionSettings:
+          idleTimeout: 1800
+          maxLifespan: 36000
+      themes:
+        loginTheme: keycloak
+        accountTheme: keycloak.v2
+        adminConsoleTheme: keycloak.v2
+        emailTheme: keycloak
+
+    user:
+      type: user
+      name: user-false
+      realmRef: realm-false
+      email: disabled@example.test
+      enabled: false
+      emailVerified: false
+      clientRoles:
+        - clientId: public-client
+          roles:
+            - reader
+
+    public-client:
+      type: client
+      name: public-client
+      realmRef: realm-false
+      clientId: public-client
+      webUrl: https://public.example.test
+      public: true
+      directAccess: false
+      stdFlow: false
+      attributes:
+        oauth2Grant: false
+        authService: true
+      rawAttributes:
+        pkce.code.challenge.method: S256
+
+    idp:
+      type: idp
+      name: disabled-idp
+      realmRef: realm-false
+      alias: disabled-idp
+      providerId: oidc
+      enabled: false
+      trustEmail: false
+      storeToken: false
+
+    flow:
+      type: flow
+      name: child-flow
+      realmRef: realm-false
+      alias: child-flow
+      builtIn: false
+      topLevel: false

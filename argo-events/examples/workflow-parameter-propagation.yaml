@@ -1,0 +1,51 @@
+name: workflow-parameter-propagation
+
+spellbook:
+  name: example-book
+chapter:
+  name: automation
+
+lexicon:
+  automation-eventbus:
+    name: automation-eventbus
+    type: event-bus
+    labels:
+      purpose: automation
+      default: book
+
+glyphs:
+  argo-events:
+    workflow-sensor:
+      type: sensor
+      selector:
+        purpose: automation
+      template:
+        serviceAccountName: workflow-sensor
+      dependencies:
+        - name: webhook-event
+          eventSourceName: webhook-source
+          eventName: generic-hook
+      triggers:
+        - name: build-workflow
+          type: argoWorkflow
+          argoWorkflow:
+            operation: submit
+            source:
+              resource:
+                apiVersion: argoproj.io/v1alpha1
+                kind: Workflow
+                metadata:
+                  generateName: build-
+                  namespace: builds
+                spec:
+                  arguments:
+                    parameters:
+                      - name: revision
+                        value: ""
+                  workflowTemplateRef:
+                    name: build
+          parameters:
+            - src:
+                dependencyName: webhook-event
+                dataKey: body.after
+              dest: spec.arguments.parameters.0.value

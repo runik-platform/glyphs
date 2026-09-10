@@ -1,0 +1,17 @@
+# Native ClusterProxy. The referenced ServiceAccount and its Kubernetes
+# impersonation permissions are intentionally managed outside this glyph.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    production-api:
+      type: clusterProxy
+      namespace: netbird
+      clusterName: production
+      serviceAccountName: clusterproxy-production
+      groups:
+        - name: kubernetes-admins

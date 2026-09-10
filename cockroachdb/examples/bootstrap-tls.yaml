@@ -1,0 +1,32 @@
+name: secure-bootstrap
+chapter:
+  name: infrastructure
+spellbook:
+  name: test-book
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: test-book
+    secretPath: secret
+    labels:
+      default: book
+  crdb-secure:
+    type: cockroachdb
+    namespace: cockroachdb
+    host: crdb-secure-public.cockroachdb.svc
+    tls:
+      enabled: true
+    labels:
+      name: crdb-secure
+      default: book
+glyphs:
+  cockroachdb:
+    bootstrap:
+      type: bootstrap
+      selector:
+        name: crdb-secure
+      execution:
+        mode: postInitSQL

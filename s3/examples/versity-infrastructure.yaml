@@ -1,0 +1,27 @@
+# VersityGW S3 infrastructure example — s3.type:versity
+name: s3
+namespace: s3
+spellbook: {name: the-yaml-life}
+chapter: {name: intro}
+lexicon:
+  default-eventbus:
+    type: event-bus
+    name: default-eventbus
+    namespace: argo-events
+    labels: {default: book}
+  default-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    serviceAccount: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    skipVerify: true
+    labels: {default: book}
+glyphs:
+  s3:
+    gateway:
+      type: versity
+      trigger:
+        type: workflow

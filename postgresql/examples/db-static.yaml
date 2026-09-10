@@ -1,0 +1,44 @@
+# Stable PostgreSQL identity managed end-to-end by CNPG and Vault.
+name: harbor
+
+chapter:
+  name: registries
+
+spellbook:
+  name: test-book
+
+lexicon:
+  pg-infra:
+    type: postgres
+    namespace: pg-infra
+    managerSuperuser: true
+    labels:
+      default: book
+  intro-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+
+glyphs:
+  postgresql:
+    harbor:
+      type: db
+      databaseName: registry
+      credentials:
+        mode: static
+        username: harbor
+        secretName: harbor-pg-infra
+        rotationPeriod: 2592000
+        refreshPeriod: 1m0s
+        passwordPolicy: short-policy
+        annotations:
+          reloader.stakater.com/match: "true"
+  vault:
+    access:
+      type: prolicy
+      serviceAccount: harbor

@@ -1,0 +1,30 @@
+# Own exactly one membership edge for an already-enrolled peer. Other peer and
+# Network Resource members in the target group are preserved by the operator.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  edge-router-01:
+    type: netbird-peer
+    name: edge-router-01
+    labels:
+      device-id: edge-router-01
+      default: book
+  edge-routers:
+    type: netbird-group
+    name: edge-routers
+    labels:
+      peer-role: network-router
+      default: book
+
+glyphs:
+  netbird:
+    edge-router-01-membership:
+      type: peerGroupBinding
+      peerSelector:
+        device-id: edge-router-01
+      groupSelector:
+        peer-role: network-router

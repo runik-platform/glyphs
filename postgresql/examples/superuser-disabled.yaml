@@ -1,0 +1,13 @@
+spellbook:
+  name: test-postgresql
+  chapters:
+    - databases
+
+chapter:
+  name: databases
+
+glyphs:
+  postgresql:
+    restricted-instance:
+      type: instance
+      enableSuperuserAccess: false

@@ -1,0 +1,17 @@
+spellbook:
+  name: test-postgresql
+  chapters:
+    - databases
+
+chapter:
+  name: databases
+
+# Per-CRD glyph for a one-shot Backup. Useful for pre-migration snapshots
+# or to mark a manual recovery point. For recurring schedules use
+# `type: scheduledBackup`.
+glyphs:
+  postgresql:
+    pre-migration-2026-05-19:
+      type: backup
+      cluster: production-db
+      method: barmanObjectStore

@@ -1,0 +1,27 @@
+# Native NetworkResource — exposes the ClusterIP Service `api` through the
+# production NetworkRouter and registers its A record in the router DNS zone.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  services:
+    type: netbird-group
+    name: kubernetes-services
+    labels:
+      role: service
+
+glyphs:
+  netbird:
+    api:
+      type: networkResource
+      namespace: applications
+      networkRouterRef:
+        name: production
+        namespace: netbird
+      serviceRef:
+        name: api
+      groupsSelector:
+        role: service

@@ -1,0 +1,22 @@
+# Native NetworkEgress — permits workloads behind the router to reach an exact
+# external FQDN on explicitly named ports.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    internal-api-egress:
+      type: networkEgress
+      namespace: applications
+      networkRouterRef:
+        name: production
+        namespace: netbird
+      target:
+        fqdn:
+          hostname: api.internal.example.com
+      ports:
+        - name: https
+          port: 443

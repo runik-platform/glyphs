@@ -1,0 +1,12 @@
+apiVersion: v2
+name: mongodb
+version: 3.0.0
+description: Percona MongoDB clusters plus declarative database and user operations for Runik
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com

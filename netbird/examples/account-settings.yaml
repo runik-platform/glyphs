@@ -1,0 +1,49 @@
+# NetBirdAccountSettings — account-wide policy. Group refs resolved via
+# lexicon selectors.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  admins:
+    type: netbird-group
+    name: admins
+    labels:
+      role: admin
+      default: book
+  audited:
+    type: netbird-group
+    name: audited
+    labels:
+      purpose: audit
+      default: book
+
+glyphs:
+  netbird:
+    account-defaults:
+      type: accountSettings
+      networkRange: 100.64.0.0/16
+      dnsDomain: netbird.corp
+      groupsPropagationEnabled: true
+      lazyConnectionEnabled: true
+      regularUsersViewBlocked: false
+      peerLoginExpiration:
+        enabled: true
+        seconds: 2592000
+      jwtGroups:
+        enabled: true
+        claimName: groups
+        allowGroups:
+          - admins
+      extra:
+        networkTrafficLogsEnabled: true
+        peerApprovalEnabled: true
+        userApprovalRequired: false
+      trafficLogsGroupsSelector:
+        purpose: audit
+      peerExpose:
+        enabled: true
+      peerExposeGroupsSelector:
+        role: admin

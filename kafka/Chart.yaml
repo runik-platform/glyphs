@@ -1,0 +1,13 @@
+apiVersion: v2
+name: kafka
+version: 1.0.0
+description: Apache Kafka glyphs for Runik using the Strimzi operator
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+  - https://github.com/strimzi/strimzi-kafka-operator
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com

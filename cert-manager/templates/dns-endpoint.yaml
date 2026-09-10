@@ -1,0 +1,19 @@
+{{/*Runik Platform
+Copyright (C) 2023 namenmalkv@gmail.com
+SPDX-License-Identifier: AGPL-3.0-only
+*/}}
+{{- define "cert-manager.dnsEndpoint" }}
+{{- $root := index . 0 -}}
+{{- $glyphDefinition := index . 1}}
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: {{ default (include "common.name" $root) $glyphDefinition.name }}
+spec:
+  endpoints:
+    - dnsName: {{ $glyphDefinition.dnsName }}
+      recordType: {{ default "A" $glyphDefinition.recordType }}
+      targets:
+        - {{ $glyphDefinition.target }}
+{{- end }}

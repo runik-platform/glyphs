@@ -1,0 +1,13 @@
+apiVersion: v2
+name: elasticsearch
+version: 1.0.0
+description: ECK Elasticsearch glyphs with Vault dynamic credentials
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com
+

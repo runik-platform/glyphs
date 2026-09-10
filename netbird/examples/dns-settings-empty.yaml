@@ -1,0 +1,12 @@
+# Empty singleton DNS settings explicitly leaves NetBird DNS management enabled
+# for every peer.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    account-dns-defaults:
+      type: dnsSettings

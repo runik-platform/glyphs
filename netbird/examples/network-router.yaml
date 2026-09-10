@@ -1,0 +1,28 @@
+# Native NetworkRouter — creates the NetBird Network and a redundant pool of
+# routing peers. The DNS zone must already exist in NetBird.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    production:
+      type: networkRouter
+      namespace: netbird
+      dnsZoneRef:
+        name: prod.company.internal
+      logLevel: info
+      workloadOverride:
+        replicas: 3
+        podTemplate:
+          spec:
+            nodeSelector:
+              role: edge
+            containers:
+              - name: netbird
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi

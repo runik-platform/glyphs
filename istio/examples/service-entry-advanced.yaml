@@ -1,0 +1,43 @@
+# Advanced Istio ServiceEntry — exercises every optional field at once:
+# MESH_EXTERNAL (call out to a non-mesh dependency with policies applied),
+# STATIC resolution with addresses + endpoints, exportTo scoping,
+# subjectAltNames for mTLS validation, custom name and annotations.
+#
+# Addresses use RFC 5737 TEST-NET-2 (198.51.100.0/24), the documentation
+# range reserved for examples — never resolvable in real networks.
+
+spellbook:
+  name: my-platform
+chapter:
+  name: production
+
+glyphs:
+  istio:
+    external-billing:
+      type: serviceEntry
+      enabled: true
+      nameOverride: external-billing-api
+      annotations:
+        finops/service: external-billing
+      hosts:
+        - billing.example.com
+      location: MESH_EXTERNAL
+      resolution: STATIC
+      addresses:
+        - 198.51.100.10
+        - 198.51.100.11
+      ports:
+        - number: 443
+          name: https
+          protocol: HTTPS
+      endpoints:
+        - address: 198.51.100.10
+          locality: us-east-1/zone-a
+          weight: 80
+        - address: 198.51.100.11
+          locality: us-east-1/zone-b
+          weight: 20
+      subjectAltNames:
+        - billing.example.com
+      exportTo:
+        - "."

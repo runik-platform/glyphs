@@ -1,0 +1,19 @@
+spellbook:
+  name: example
+chapter:
+  name: workflows
+
+glyphs:
+  workflow:
+    reconcile-cache:
+      type: template
+      labels:
+        process: cache-reconciliation
+      spec:
+        entrypoint: reconcile
+        templates:
+          - name: reconcile
+            container:
+              image: alpine:3.22
+              command: [sh, -c]
+              args: ["echo reconcile"]

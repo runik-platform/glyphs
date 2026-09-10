@@ -1,0 +1,36 @@
+# App consuming a shared cluster with the MINIMAL declaration: type: db.
+# Everything (db/owner/role/secret/host/mount) derived from common.name +
+# the `type: postgres` lexicon entry (here in its minimal, inferred form).
+name: miapp
+
+chapter:
+  name: admintools
+
+spellbook:
+  name: test-book
+
+lexicon:
+  # Minimal postgres entry — clusterName/host/credentialsSecret/mount inferred.
+  shared-pg:
+    type: postgres
+    managerSuperuser: true
+    labels:
+      default: book
+  intro-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+
+glyphs:
+  postgresql:
+    miapp:
+      type: db
+  vault:
+    access:
+      type: prolicy
+      serviceAccount: miapp

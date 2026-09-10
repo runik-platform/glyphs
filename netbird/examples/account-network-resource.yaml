@@ -1,0 +1,33 @@
+# Arbitrary account-plane resource associated with one Network and one or more
+# NetBird groups through runicIndexer selectors.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  edge-services:
+    type: netbird-network
+    name: edge-services
+    labels:
+      network-class: edge-services
+      default: book
+  private-services:
+    type: netbird-group
+    name: private-services
+    labels:
+      resource-class: private-service
+      default: book
+
+glyphs:
+  netbird:
+    internal-api:
+      type: accountNetworkResource
+      nbName: internal-api
+      description: Private API endpoint
+      address: api.internal.example.com
+      networkSelector:
+        network-class: edge-services
+      groupsSelector:
+        resource-class: private-service

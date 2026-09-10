@@ -1,0 +1,26 @@
+# SetupKey + SidecarProfile — matching pods receive their own ephemeral NetBird
+# identity. Both resources must live in the same namespace.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    workloads:
+      type: setupKey
+      namespace: applications
+      ephemeral: true
+      allowExtraDnsLabels: true
+    application-peers:
+      type: sidecarProfile
+      namespace: applications
+      setupKeyRef:
+        name: workloads
+      podSelector:
+        matchLabels:
+          netbird.io/peer: "true"
+      injectionMode: Sidecar
+      extraDNSLabels:
+        - applications

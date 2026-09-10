@@ -1,0 +1,23 @@
+# Basic Istio ServiceEntry — alias an externally-resolvable FQDN to the
+# internal cluster Service of the same workload, so in-mesh clients avoid
+# hairpinning through the Ingress Gateway LoadBalancer.
+
+spellbook:
+  name: the-yaml-life
+chapter:
+  name: intro
+
+glyphs:
+  istio:
+    git-internal-alias:
+      type: serviceEntry
+      enabled: true
+      hosts:
+        - git.example.com
+      ports:
+        - number: 2222
+          protocol: TCP
+        - number: 443
+          protocol: HTTPS
+      endpoints:
+        - address: git.git.svc.cluster.local

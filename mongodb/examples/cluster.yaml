@@ -1,0 +1,57 @@
+# Physical MongoDB engine. The cluster meta glyph also registers the logical
+# MongoDBEngine used by application-side database/user glyphs.
+spellbook:
+  name: platform
+chapter:
+  name: databases
+
+lexicon:
+  vault:
+    type: secret-store
+    url: https://vault.vault.svc:8200
+    namespace: vault
+    secretPath: kv
+    authPath: platform
+    serviceAccount: vault
+    role: vault
+    labels:
+      provider: operator
+      default: book
+
+  s3:
+    type: s3-provider
+    name: seaweedfs
+    namespace: seaweedfs
+    endpoint: https://s3.example.test
+    internalEndpoint: http://seaweedfs-s3.seaweedfs.svc:8333
+    region: us-east-1
+    serviceAccount: seaweedfs
+    role: seaweedfs
+    labels:
+      default: book
+
+  mongo-main:
+    type: mongodb
+    clusterName: mongo-main
+    engineName: mongo-main
+    namespace: databases
+    labels:
+      name: mongo-main
+      default: book
+
+glyphs:
+  mongodb:
+    mongo-main:
+      type: cluster
+      namespace: databases
+      storage:
+        size: 20Gi
+        storageClassName: longhorn
+      operations:
+        # Namespaces must be authorized explicitly. Applications using this
+        # engine set the same label through managedNamespaceMetadata.
+        allowedNamespaces:
+          matchLabels:
+            mongodb.runik.io/engine: mongo-main
+      # Backups are enabled by default. With no override this schedules one
+      # backup every Sunday at 03:00 using the s3-provider above.

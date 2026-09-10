@@ -1,0 +1,21 @@
+# NetBirdToken — creates and rotates a PAT for an existing NetBird user. Users
+# are provisioned outside this operator (normally through OIDC/JIT), so userRef
+# is the existing user's name or email.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    ci-bot-token:
+      type: token
+      namespace: netbird
+      userRef: ci-bot@example.com
+      nbName: CI Pipeline Token
+      expiresInDays: 90
+      renewBeforeDays: 7
+      secret:
+        name: netbird-ci-token
+        key: token

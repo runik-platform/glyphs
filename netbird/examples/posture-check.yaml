@@ -1,0 +1,21 @@
+# NetBirdPostureCheck — enforce minimum NetBird client version and
+# geo restrictions.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    minimum-version:
+      type: postureCheck
+      description: Require recent NetBird client and deny non-EU locations
+      checks:
+        nbVersionCheck:
+          minVersion: "0.30.0"
+        geoLocationCheck:
+          action: deny
+          locations:
+            - countryCode: RU
+            - countryCode: CN

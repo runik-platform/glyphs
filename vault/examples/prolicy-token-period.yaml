@@ -1,0 +1,24 @@
+# prolicy with a periodic token: tokenPeriod (seconds) makes the issued token
+# renewable indefinitely (no max_ttl), so vault-agent only ever renews and never
+# re-authenticates. Use for consumers that capture the token once and cannot pick
+# up a rotation (e.g. versity's --iam-vault-root-token, read at boot).
+
+lexicon:
+  - chapter: base-system
+    skipVerify: true
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    serviceAccount: vault
+    authPath: k8s-path-auth
+    secretPath: kv
+    labels:
+      default: book
+
+glyphs:
+  vault:
+    - type: prolicy
+      nameOverride: periodic-app-policy
+      serviceAccount: periodic-app-sa
+      tokenPeriod: 2764800 # 768h in seconds

@@ -1,0 +1,29 @@
+spellbook:
+  name: example
+chapter:
+  name: applications
+
+lexicon:
+  private-services:
+    type: netbird-network
+    name: private-services
+    labels:
+      location: datacenter-a
+      network-class: kubernetes-services
+    routerRef:
+      name: private-services
+      namespace: netbird
+
+glyphs:
+  netbird:
+    access:
+      type: serviceExposure
+      serviceRef:
+        name: grafana
+      namespace: observability
+      networkSelector:
+        location: datacenter-a
+        network-class: kubernetes-services
+      access:
+        developers:
+          tcp: [80]

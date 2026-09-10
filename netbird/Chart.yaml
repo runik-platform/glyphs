@@ -1,0 +1,15 @@
+apiVersion: v2
+name: netbird
+version: 3.2.0
+description: NetBird glyphs for Runik — native operator v0.8 plus complementary operator 1.x CRDs
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+  - https://github.com/netbirdio/netbird
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkv@gmail.com
+  - name: laaledesiempre
+    email: laaledesiempre@disroot.org

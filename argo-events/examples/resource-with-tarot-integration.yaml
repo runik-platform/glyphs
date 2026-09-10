@@ -1,0 +1,138 @@
+name: resource-with-tarot-integration
+
+spellbook:
+  name: example-book
+chapter:
+  name: automation
+
+# Consolidated lexicon received by the glyph
+lexicon:
+  automation-eventbus:
+    name: automation-eventbus
+    type: event-bus
+    labels:
+      type: jetstream
+      environment: production
+      default: book
+    jetstream:
+      version: "2.10.10"
+      replicas: 3
+
+  deployment-annotation-source:
+    name: deployment-annotation-source
+    type: event-source
+    eventName: deployment-annotation-monitoring
+    labels:
+      type: jetstream
+      environment: production
+
+  # Target published by the spell that owns the WorkflowTemplate
+  deployment-restart-trigger:
+    name: deployment-restart-trigger
+    type: workflow-trigger
+    labels:
+      action: restart
+      resource: deployment
+      default: book
+    sensorSelector:
+      purpose: deployment-automation
+    readingSelector:
+      process: deployment-rollout-restart
+      version: v1
+    operation: submit
+    match:
+      action: restart
+    parameters:
+      deployment_name:
+        from: body.metadata.name
+      deployment_namespace:
+        from: body.metadata.namespace
+
+  deployment-rollout-restart:
+    name: deployment-rollout-restart
+    type: tarot-reading
+    labels:
+      process: deployment-rollout-restart
+      version: v1
+    scope: namespace
+    contract:
+      inputs:
+        parameters:
+          deployment_name: {required: true}
+          deployment_namespace: {required: true}
+
+# ArgoEvents: Monitor and trigger
+glyphs:
+  argo-events:
+    # EventSource: Monitor deployment annotations
+    deployment-annotation-source:
+      type: eventSource
+      selector:
+        type: jetstream
+        environment: production
+      resource:
+        deployment-annotation-monitoring:
+          namespace: default
+          group: apps
+          version: v1
+          resource: deployments
+          eventTypes:
+            - UPDATE
+          filter:
+            expression: |
+              has(body.metadata.annotations) &&
+              has(body.metadata.annotations['runik.ing/action']) &&
+              body.metadata.annotations['runik.ing/action'] == 'restart'
+
+    # Sensor: Trigger Tarot reading via runicIndexer
+    deployment-restart-sensor:
+      type: sensor
+      labels:
+        purpose: deployment-automation
+      selector:
+        type: jetstream
+        environment: production
+      eventSourceSelector:
+        type: jetstream
+        environment: production
+      template:
+        serviceAccountName: deployment-automation
+
+# Tarot: define the WorkflowTemplate target
+tarot:
+  serviceAccount:
+    name: deployment-automation
+  reading:
+    inputs:
+      parameters:
+        deployment_name: {required: true, runtime: true}
+        deployment_namespace: {required: true, runtime: true}
+    cards:
+      restart-deployment:
+        container:
+          image: bitnami/kubectl:latest
+          command: [sh, -c]
+          args:
+            - >-
+              kubectl rollout restart
+              deployment/{{inputs.parameters.deployment_name}}
+              -n {{inputs.parameters.deployment_namespace}}
+        contract:
+          inputs:
+            parameters: [deployment_name, deployment_namespace]
+        with:
+          deployment_name: "{{workflow.parameters.deployment_name}}"
+          deployment_namespace: "{{workflow.parameters.deployment_namespace}}"
+
+# ServiceAccount for sensor and workflow
+serviceAccount:
+  enabled: true
+  name: deployment-automation
+
+# RBAC for sensor to trigger workflows
+rbac:
+  enabled: true
+  rules:
+    - apiGroups: ["argoproj.io"]
+      resources: ["workflows", "workflowtemplates"]
+      verbs: ["get", "list", "create"]

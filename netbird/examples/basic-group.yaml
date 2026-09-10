@@ -1,0 +1,21 @@
+# Native Group: a single NetBird group, plus a lexicon entry so other
+# netbird glyphs can discover it via selector instead of hardcoding the name.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  prod-servers:
+    type: netbird-group
+    name: prod-servers
+    labels:
+      environment: production
+      role: server
+      default: book
+
+glyphs:
+  netbird:
+    prod-servers:
+      type: group

@@ -1,0 +1,53 @@
+# Test: low-level vault.databaseEngine with an explicitly selected mount.
+# The mount itself is Vault infra (bank-vaults externalConfig.secrets), not here.
+# A per-engine chart (postgresql, mongodb, ...) supplies pluginName + the
+# connection string parts; this glyph renders the DatabaseSecretEngineConfig.
+
+name: database-engine-test
+
+chapter:
+  name: databases
+
+spellbook:
+  name: test-book
+
+lexicon:
+  - type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    skipVerify: true
+    labels:
+      default: book
+
+glyphs:
+  vault:
+    # PostgreSQL connection — prefix/suffix wrap the universal {{username}}/{{password}}.
+    # Root creds from a K8s basic-auth secret in the config (Vault) namespace.
+    - type: databaseEngine
+      name: shared-pg
+      pluginName: postgresql-database-plugin
+      connectionPrefix: "postgresql://"
+      connectionSuffix: "@shared-pg-rw.databases.svc:5432/*"
+      username: postgres
+      credentialsSecret: shared-pg-superuser
+      allowedRoles:
+        - "*-rw"
+        - "*-ro"
+      # Optional connection defaults are owned by vault.databaseEngine:
+      # passwordAuthentication: password
+      # rootRotation: false
+      # rootRotationPeriod: 0s
+
+    # MongoDB connection on the SAME mount — shows the engine is generic and one
+    # mount hosts many connections. Full connectionURL override + Vault KV root.
+    - type: databaseEngine
+      name: shared-mongo
+      pluginName: mongodb-database-plugin
+      connectionURL: "mongodb://{{username}}:{{password}}@shared-mongo.databases.svc:27017/admin?tls=false"
+      username: root
+      vaultSecretPath: chapter
+      allowedRoles:
+        - "*-rw"

@@ -1,0 +1,26 @@
+spellbook:
+  name: test-postgresql
+  chapters:
+    - databases
+
+chapter:
+  name: databases
+
+# `type: instance` is the raw per-CRD glyph. It emits ONLY the Cluster
+# resource; no ObjectStore, s3.bucket, or ScheduledBackup. The backup block
+# references an existing Barman Cloud Plugin ObjectStore. For an
+# auto-provisioned setup use `type: cluster`.
+glyphs:
+  postgresql:
+    raw-instance:
+      type: instance
+      description: Bare Cluster CRD with an existing Barman ObjectStore
+      instances: 1
+      dbName: app
+      userName: app
+      secret: app-pg-creds
+      storage:
+        size: 5Gi
+      backup:
+        barmanObjectName: raw-instance-objectstore
+        walArchiver: true

@@ -1,0 +1,15 @@
+apiVersion: v2
+name: workflow
+type: library
+version: 0.1.0
+description: Argo Workflows resource renderer for Runik glyphs and metaglyphs
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com
+  - name: laaledesiempre
+    email: laaledesiempre@disroot.org

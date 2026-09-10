@@ -1,0 +1,28 @@
+# Escape hatch for native Percona specs. The caller owns the complete CR,
+# including the atomic roles/users arrays.
+spellbook:
+  name: development
+chapter:
+  name: databases
+
+glyphs:
+  mongodb:
+    raw-mongo:
+      type: instance
+      namespace: databases
+      spec:
+        crVersion: 1.23.0
+        image: percona/percona-server-mongodb:8.0.26-11
+        replsets:
+          - name: rs0
+            size: 1
+            volumeSpec:
+              persistentVolumeClaim:
+                resources:
+                  requests:
+                    storage: 5Gi
+        unsafeFlags:
+          replsetSize: true
+        backup:
+          enabled: false
+          image: percona/percona-backup-mongodb:2.15.0

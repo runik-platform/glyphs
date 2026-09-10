@@ -1,0 +1,42 @@
+# DNSZone (producer) + DNSRecord (consumer via zoneSelector). Shows that
+# a single spell can both declare a zone in the lexicon and attach records
+# to it without hardcoding the zoneRef.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  dev-team:
+    type: netbird-group
+    name: dev-team
+    labels:
+      default: book
+  internal-zone:
+    type: netbird-dnszone
+    name: internal-zone
+    labels:
+      zone: internal
+      default: book
+
+glyphs:
+  netbird:
+    dev-team:
+      type: group
+
+    internal-zone:
+      type: dnsZone
+      domain: internal.example.com
+      enabled: true
+      enableSearchDomain: true
+      groupsSelector:
+        default: book
+
+    api-record:
+      type: dnsRecord
+      recordType: A
+      content: 10.20.30.40
+      ttl: 300
+      zoneSelector:
+        zone: internal

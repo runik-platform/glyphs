@@ -1,0 +1,32 @@
+name: hildy
+chapter:
+  name: living-the-life
+spellbook:
+  name: test-book
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: test-book
+    secretPath: secret
+    labels:
+      default: book
+  crdb-main:
+    type: cockroachdb
+    namespace: cockroachdb
+    host: crdb-main-public.cockroachdb.svc
+    tls:
+      enabled: true
+    labels:
+      name: crdb-main
+      default: book
+glyphs:
+  cockroachdb:
+    hildy:
+      type: database
+  vault:
+    access:
+      type: prolicy
+      serviceAccount: hildy

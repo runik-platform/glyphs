@@ -1,0 +1,66 @@
+{{/*Runik Platform
+Copyright (C) 2023 namenmalkv@gmail.com
+SPDX-License-Identifier: AGPL-3.0-only
+
+## TODO static solvers only acme spec
+*/}}
+{{- define "cert-manager.clusterIssuer" }}
+{{- $root := index . 0 -}}
+{{- $glyphDefinition := index . 1}}
+{{- if $glyphDefinition.issuerType }}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ default (include "common.name" $root) $glyphDefinition.name }}
+spec:
+  acme:
+    email: {{ $glyphDefinition.email }}
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+        {{- if eq "linode" $glyphDefinition.issuerType }}
+          webhook:
+            groupName: acme.cluster.local
+            solverName: linode
+            config:
+            {{- if $glyphDefinition.linode.apiKey }}
+              apiKey: {{ $glyphDefinition.linode.apiKey }}
+            {{- else }}
+               apiKeySecretRef:
+                name: {{ $glyphDefinition.linode.secret.name }}
+                key: {{ $glyphDefinition.linode.secret.key }}
+            {{- end }}
+        {{- else if eq "gcp" $glyphDefinition.issuerType }}
+          cloudDNS: 
+            project: {{ $glyphDefinition.gcp.projectID }}
+          {{- if $glyphDefinition.gcp.secret }}
+            serviceAccountSecretRef:
+              name: {{ $glyphDefinition.gcp.secret.name }}
+              key: {{ $glyphDefinition.gcp.secret.key }}
+          {{- end }}
+        {{- else if eq "cloudflare" $glyphDefinition.issuerType }}
+          cloudflare: 
+            apiTokenSecretRef:
+              name: {{ default "cloudflare" ($glyphDefinition.cloudflare).secret.name }}
+              key: {{ default "api-token" ($glyphDefinition.cloudflare).secret.key }}
+        {{- else if eq "aws" $glyphDefinition.issuerType }}
+          route53:
+            region: {{ default "us-east-1" (dig "aws" "region" "" $glyphDefinition) }}
+            {{- if dig "aws" "hostedZoneID" "" $glyphDefinition }}
+            hostedZoneID: {{ $glyphDefinition.aws.hostedZoneID }}
+            {{- end }}
+            {{- if dig "aws" "role" "" $glyphDefinition }}
+            role: {{ $glyphDefinition.aws.role }}
+            {{- end }}
+            {{- if dig "aws" "accessKeyID" "" $glyphDefinition }}
+            accessKeyID: {{ $glyphDefinition.aws.accessKeyID }}
+            secretAccessKeySecretRef:
+              name: {{ $glyphDefinition.aws.secret.name }}
+              key: {{ default "secret-access-key" (dig "aws" "secret" "key" "" $glyphDefinition) }}
+            {{- end }}
+        {{- end }}
+{{- end }}
+{{- end }}

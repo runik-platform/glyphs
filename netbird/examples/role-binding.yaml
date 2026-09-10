@@ -1,0 +1,29 @@
+# NetBirdRoleBinding — promotes exact members of an existing JWT-synchronized
+# NetBird group to the internal admin role. The group is resolved through the
+# lexicon; this resource does not create the group or its users.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  vpn-admins:
+    type: netbird-group
+    name: vpn-admins
+    labels:
+      access: admin
+      default: book
+
+glyphs:
+  netbird:
+    vpn-admins:
+      type: roleBinding
+      namespace: netbird
+      groupSelector:
+        access: admin
+      role: admin
+      revokeOnExit: true
+      restoreOnDelete: true
+      includeServiceUsers: false
+      pollIntervalSeconds: 60

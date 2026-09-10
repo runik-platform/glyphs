@@ -1,0 +1,34 @@
+# Register any MongoDB-compatible server. This glyph only references existing
+# credentials and CA material; it does not depend on Percona or Vault.
+spellbook:
+  name: platform
+chapter:
+  name: databases
+
+glyphs:
+  mongodb:
+    shared-mongodb:
+      type: engine
+      connection:
+        host: mongodb.database-system.svc.cluster.local
+        port: 27017
+        authenticationDatabase: admin
+        credentialsSecretRef:
+          namespace: database-system
+          name: mongodb-operator-admin
+          usernameKey: username
+          passwordKey: password
+        tls:
+          enabled: true
+          caRef:
+            kind: Secret
+            namespace: database-system
+            name: mongodb-ca
+            key: ca.crt
+        options:
+          replicaSet: rs0
+          retryReads: true
+          retryWrites: true
+      allowedNamespaces:
+        matchLabels:
+          mongodb.runik.io/engine: shared-mongodb

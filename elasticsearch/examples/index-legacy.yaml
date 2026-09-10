@@ -1,0 +1,36 @@
+# Compatibility fixture for books that still use the former shared mount.
+# Its Vault Policy may be owned by a sibling spell sharing the same SA.
+name: fulltext
+chapter:
+  name: huly
+spellbook:
+  name: the-yaml-life
+lexicon:
+  elastic-infra:
+    type: elasticsearch
+    namespace: elastic-infra
+    host: elastic-infra-es-http.elastic-infra.svc
+    port: "9200"
+    databaseMount: database
+    tls:
+      enabled: false
+    labels:
+      default: book
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+glyphs:
+  elasticsearch:
+    huly-search:
+      type: index
+      name: fulltext
+      indexName: huly-production
+      vaultRoleName: elastic-infra-huly-search-rw
+      secretName: huly-search
+      serviceAccount: huly

@@ -1,0 +1,49 @@
+name: shared-elastic
+
+chapter:
+  name: shared-infra
+
+spellbook:
+  name: test-book
+
+lexicon:
+  shared-elastic:
+    type: elasticsearch
+    namespace: elastic-infra
+    host: shared-elastic-es-http.elastic-infra.svc
+    port: "9200"
+    tls:
+      enabled: false
+    labels:
+      default: book
+  intro-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+
+glyphs:
+  summon:
+    elastic-infra:
+      type: serviceAccount
+      enabled: true
+      name: elastic-infra
+  vault:
+    elastic-infra:
+      type: prolicy
+      nameOverride: elastic-infra
+      serviceAccount: elastic-infra
+      extraPolicy:
+        - path: database/config/shared-elastic
+          capabilities: [create, read, update, delete]
+  elasticsearch:
+    shared-elastic:
+      type: connection
+      serviceAccount: elastic-infra
+      allowedRoles:
+        - shared-elastic-*-rw
+        - shared-elastic-*-ro

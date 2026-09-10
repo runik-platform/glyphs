@@ -1,0 +1,8 @@
+apiVersion: v2
+name: certManager
+version: 1.0.0
+description: Deprecated compatibility shim for the cert-manager glyph
+type: library
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+  runik.io/deprecated: "Use cert-manager instead"

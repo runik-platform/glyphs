@@ -1,0 +1,18 @@
+# A Percona cluster can run without Vault, S3 or logical operations. The engine
+# and user primitives can still reference Secrets managed by another system.
+spellbook:
+  name: development
+chapter:
+  name: databases
+
+glyphs:
+  mongodb:
+    mongo-dev:
+      type: cluster
+      namespace: databases
+      size: 1
+      backup:
+        enabled: false
+      spec:
+        unsafeFlags:
+          replsetSize: true

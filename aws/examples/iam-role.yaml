@@ -1,0 +1,52 @@
+lexicon:
+  dev-eks-cluster:
+    type: k8s-cluster
+    provider: aws
+    labels:
+      environment: development
+      region: us-west-1
+      default: book
+    clusterURL: https://SARLANGAOIDC.gr7.us-west-1.eks.amazonaws.com
+    oidcID: SARLANGAOIDC
+    region: us-west-1
+    accountID: "123456789012"
+  aws-iam-policy-secrets-manager:
+    type: aws-iam-policy
+    provider: aws
+    arn: iam-policy-secretsdasdadasdadsa
+    labels:
+      resources: secret-manager
+      environment: development
+      region: us-west-1
+  aws-iam-policy-s3:
+    type: aws-iam-policy
+    provider: aws
+    arn: iam-policy-s3sasasdas
+    labels:
+      resources: s3
+      environment: development
+      region: us-west-1
+  application-permissions-boundary:
+    type: aws-permissions-boundary
+    provider: aws
+    arn: arn:aws:iam::123456789012:policy/application-permissions-boundary
+    labels:
+      scope: applications
+
+
+glyphs:
+  aws:
+    un-role:
+      type: iam-oidc-k8s-role
+      oidcID: SARLANGAOIDC
+      nameOverride: runik-un-role #optional
+      permissionsBoundary:
+        selector:
+          scope: applications
+      policies:
+        - name: runik-un-policy
+          selector:
+            resources: secret-manager
+        - name: aws-iam-policy-s3
+          selector:
+            resources: s3

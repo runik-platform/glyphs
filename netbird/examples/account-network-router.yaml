@@ -1,0 +1,33 @@
+# Existing enrolled routing peers attached to an account-plane Network. This
+# resource creates no Kubernetes Deployment or NetBird peer.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  edge-services:
+    type: netbird-network
+    name: edge-services
+    labels:
+      network-class: edge-services
+      default: book
+  edge-routers:
+    type: netbird-group
+    name: edge-routers
+    labels:
+      peer-role: network-router
+      default: book
+
+glyphs:
+  netbird:
+    edge-router-pool:
+      type: accountNetworkRouter
+      networkSelector:
+        network-class: edge-services
+      peerGroupsSelector:
+        peer-role: network-router
+      enabled: true
+      masquerade: true
+      metric: 100

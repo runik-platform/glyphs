@@ -1,0 +1,91 @@
+# Kafka authentication integrations. The namespace is deliberately `messaging`
+# to show that none of the Kafka, Vault or cert-manager glyphs requires `kafka`.
+spellbook:
+  name: example
+chapter:
+  name: applications
+
+lexicon:
+  shared-events:
+    type: kafka
+    clusterName: events
+    namespace: messaging
+    labels:
+      default: book
+  platform-vault:
+    type: secret-store
+    provider: operator
+    name: platform-vault
+    url: https://vault.vault.svc:8200
+    namespace: vault
+    secretPath: secrets/
+    labels:
+      default: book
+  events-clients-ca:
+    type: cert-issuer
+    name: events-clients-ca
+    kind: ClusterIssuer
+    labels:
+      purpose: kafka-client
+
+glyphs:
+  vault:
+    audit-writer-password:
+      type: secret
+      name: audit-writer-password
+      namespace: messaging
+      random: true
+      randomKey: password
+      format: env
+      serviceAccount: kafka-secrets
+
+  cert-manager:
+    billing-client-certificate:
+      type: clientCertificate
+      name: billing-client
+      namespace: messaging
+      commonName: billing-client
+      secretName: billing-client-tls
+      usages:
+        - client auth
+      privateKey:
+        algorithm: ECDSA
+        size: 256
+      selector:
+        purpose: kafka-client
+
+  kafka:
+    audit-writer:
+      type: user
+      authentication:
+        type: scram-sha-512
+        password:
+          valueFrom:
+            secretKeyRef:
+              name: audit-writer-password
+              key: PASSWORD
+      authorization:
+        type: simple
+        acls:
+          - resource:
+              type: topic
+              name: audit-events
+              patternType: literal
+            operations: [Create, Describe, Write]
+
+    # tls-external tells Strimzi to manage the Kafka principal and ACLs while
+    # cert-manager owns the client certificate in Secret billing-client-tls.
+    # The Kafka TLS listener must use authentication.type=tls and its clientsCa
+    # must trust the CA behind the events-clients-ca ClusterIssuer.
+    billing-client:
+      type: user
+      authentication:
+        type: tls-external
+      authorization:
+        type: simple
+        acls:
+          - resource:
+              type: topic
+              name: billing-events
+              patternType: literal
+            operations: [Describe, Read, Write]

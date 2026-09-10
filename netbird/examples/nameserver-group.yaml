@@ -1,0 +1,38 @@
+# NetBirdNameserverGroup — overrides upstream DNS for peers in selected
+# groups. Shows group discovery via selector.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  dev-team:
+    type: netbird-group
+    name: dev-team
+    labels:
+      team: dev
+      default: book
+
+glyphs:
+  netbird:
+    dev-team:
+      type: group
+
+    corp-dns:
+      type: nameserverGroup
+      description: Corporate DNS for dev-team peers
+      enabled: true
+      primary: true
+      searchDomainsEnabled: true
+      domains:
+        - corp.example.com
+      nameservers:
+        - ip: 10.0.0.53
+          nsType: udp
+          port: 53
+        - ip: 10.0.0.54
+          nsType: udp
+          port: 53
+      groupsSelector:
+        team: dev

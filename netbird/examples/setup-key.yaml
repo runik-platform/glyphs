@@ -1,0 +1,25 @@
+# Native SetupKey — the operator creates the reusable NetBird key and stores it
+# in Secret setup-key-default-setup, key setup-key.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  sidecars:
+    type: netbird-group
+    name: kubernetes-sidecars
+    labels:
+      role: sidecar
+
+glyphs:
+  netbird:
+    default-setup:
+      type: setupKey
+      nbName: kubernetes-sidecars
+      ephemeral: true
+      allowExtraDnsLabels: true
+      duration: 168h
+      autoGroupsSelector:
+        role: sidecar

@@ -1,0 +1,13 @@
+# Continuously remove a NetBird-side policy without requiring group refs.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+glyphs:
+  netbird:
+    legacy-default-policy:
+      type: policy
+      nbName: Default
+      state: absent

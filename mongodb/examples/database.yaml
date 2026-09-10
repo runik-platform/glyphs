@@ -1,0 +1,51 @@
+# Application-facing meta glyph. It creates MongoDBDatabase, a stable Vault
+# credential Secret and one database-scoped MongoDBUser. readWrite is default.
+name: orders
+
+appParams:
+  managedNamespaceMetadata:
+    labels:
+      mongodb.runik.io/engine: mongo-main
+
+spellbook:
+  name: platform
+chapter:
+  name: applications
+
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: https://vault.vault.svc:8200
+    namespace: vault
+    secretPath: kv
+    authPath: platform
+    serviceAccount: vault
+    role: vault
+    labels:
+      default: book
+
+  mongo-main:
+    type: mongodb
+    clusterName: mongo-main
+    engineName: mongo-main
+    namespace: databases
+    labels:
+      default: book
+
+glyphs:
+  vault:
+    orders:
+      type: prolicy
+
+  mongodb:
+    orders:
+      type: database
+      defaultUser:
+        access: readWrite
+        credentials:
+          serviceAccount: orders
+          # Keep generationRevision stable. To rotate, change it first and wait
+          # for Secret/orders, then advance credentialsRevision separately.
+          generationRevision: "1"
+        credentialsRevision: "1"

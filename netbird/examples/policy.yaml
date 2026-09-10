@@ -1,0 +1,50 @@
+# Full access policy with source, destination and posture-check references
+# discovered through the Runik lexicon. The group names may represent JWT or
+# API-managed groups; group lifecycle remains a separate concern.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  application-users:
+    type: netbird-group
+    name: application-users
+    labels:
+      access-class: application-user
+      default: book
+  application-resources:
+    type: netbird-group
+    name: application-resources
+    labels:
+      resource-class: application
+      default: book
+  managed-device:
+    type: netbird-posture-check
+    name: managed-device
+    labels:
+      trust: managed
+      default: book
+
+glyphs:
+  netbird:
+    application-access:
+      type: policy
+      description: Permit managed clients to reach application resources
+      sourceGroupRefs:
+        - application-users
+      sourceGroupsSelector:
+        access-class: application-user
+      destinationGroupsSelector:
+        resource-class: application
+      sourcePostureChecksSelector:
+        trust: managed
+      rules:
+        - name: https
+          enabled: true
+          action: accept
+          bidirectional: false
+          protocol: tcp
+          ports:
+            - 443

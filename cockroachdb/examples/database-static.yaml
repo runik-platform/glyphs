@@ -1,0 +1,38 @@
+name: hildy-static
+chapter:
+  name: living-the-life
+spellbook:
+  name: test-book
+annotations:
+  runik.ing/example: database-static
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: test-book
+    secretPath: secret
+    labels:
+      default: book
+  crdb-main:
+    type: cockroachdb
+    namespace: cockroachdb
+    host: crdb-main-public.cockroachdb.svc
+    labels:
+      name: crdb-main
+      default: book
+glyphs:
+  cockroachdb:
+    hildy-static:
+      type: database
+      credentials:
+        mode: static
+        username: hildy
+        rotationPeriod: 86400
+        passwordPolicy: short-policy
+      annotations:
+        runik.ing/credentials: static
+  vault:
+    access:
+      type: prolicy

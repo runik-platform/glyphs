@@ -1,0 +1,38 @@
+name: analytics-consumers
+chapter:
+  name: reporting
+spellbook:
+  name: test-book
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: test-book
+    secretPath: secret
+    labels:
+      default: book
+  crdb-main:
+    type: cockroachdb
+    namespace: cockroachdb
+    host: crdb-main-public.cockroachdb.svc
+    labels:
+      name: crdb-main
+      default: book
+  crdb-analytics:
+    type: cockroachdb
+    namespace: cockroachdb-analytics
+    host: crdb-analytics-public.cockroachdb-analytics.svc
+    labels:
+      name: crdb-analytics
+glyphs:
+  cockroachdb:
+    selected-database:
+      type: database
+      selector:
+        name: crdb-analytics
+  vault:
+    access:
+      type: prolicy
+      serviceAccount: analytics-consumers

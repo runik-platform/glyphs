@@ -1,0 +1,44 @@
+{{/*Runik Platform
+Copyright (C) 2023 namenmalkv@gmail.com
+SPDX-License-Identifier: AGPL-3.0-only
+*/}}
+
+{{- define "gcp.routerNat" }}
+{{- $root := index . 0 -}}
+{{- $glyphDefinition := index . 1}}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterNAT
+metadata:
+  name: {{ $glyphDefinition.name }}
+  labels:
+    {{- include "common.all.labels" $root | nindent 4 }}
+    {{- with $glyphDefinition.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $glyphDefinition.annotations }}
+  annotations:
+    {{- include "common.annotations" $root | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  region: {{ $glyphDefinition.region }}
+  networkRef:
+    name: {{ $glyphDefinition.networkRef }}
+    {{- if $glyphDefinition.networkRefNamespace }}
+    namespace: {{ $glyphDefinition.networkRefNamespace }}
+    {{- end }}
+  ## TODO HARDCODED
+  natIpAllocateOption: AUTO_ONLY
+  sourceSubnetworkIpRangesToNat: LIST_OF_SUBNETWORKS
+  subnetwork:
+  {{- range $glyphDefinition.subnets }}
+    - subnetworkRef:
+        name: {{ .name }}
+      sourceIpRangesToNat:
+        - ALL_IP_RANGES
+  {{- end }}
+  minPortsPerVm: 64
+  enableEndpointIndependentMapping: {{ default true $glyphDefinition.enableEndpointIndependentMapping }}
+  description: {{ default $glyphDefinition.name $glyphDefinition.description }}
+{{- end }}

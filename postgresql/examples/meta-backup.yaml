@@ -1,0 +1,62 @@
+spellbook:
+  name: test-postgresql
+  chapters:
+    - databases
+
+chapter:
+  name: databases
+
+# Lexicon entry that the meta `type: cluster` needs to locate the S3
+# provider. In production this is supplied by the seaweedfs spell;
+# here we inline it so the snapshot is self-contained.
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    name: vault
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    serviceAccount: vault
+    authPath: test-postgresql
+    secretPath: kv
+    labels:
+      default: book
+  seaweedfs-s3-provider:
+      type: s3-provider
+      name: seaweedfs
+      namespace: seaweedfs
+      serviceAccount: seaweedfs-s3-aggregator-pod
+      role: seaweedfs-s3-identities
+      endpoint: s3.int.the.yaml.life
+      internalEndpoint: http://seaweedfs-s3.seaweedfs.svc:8333
+      region: us-east-1
+      vault:
+        path: /s3-identities
+      provider: seaweedfs
+      labels:
+        default: book
+      # Note: in a real bookrack this lexicon entry comes from the
+      # seaweedfs spell's appendix.lexicon and gets merged in by librarian.
+      # For this standalone glyph render we inline it at the top level
+      # (kaster sees $root.Values.lexicon directly).
+
+# Meta `type: cluster` with backup-by-default — exercises the full bundle:
+# Cluster + s3.bucket (VaultSecrets app+provider side) + daily ScheduledBackup.
+glyphs:
+  postgresql:
+    hildy:
+      type: cluster
+      description: PostgreSQL with auto-backups to seaweedfs
+      # Opt out of the (default-on) Vault DB engine to keep this example focused
+      # on backups (vault IS in this lexicon, so it would be on otherwise).
+      dbEngine:
+        enabled: false
+      instances: 2
+      dbName: hildy
+      userName: hildy
+      secret: hildy-pg-app
+      storage:
+        size: 10Gi
+      # No backup: block → all defaults: retention 90d, daily 03:00 UTC,
+      # bucket "test-postgresql-databases-hildy-backup", endpoint = lexicon
+      # internalEndpoint.

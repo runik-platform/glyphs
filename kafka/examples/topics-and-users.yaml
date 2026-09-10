@@ -1,0 +1,39 @@
+spellbook:
+  name: example
+chapter:
+  name: applications
+lexicon:
+  shared-events:
+    type: kafka
+    clusterName: events
+    namespace: kafka
+    bootstrapServers: events-kafka-bootstrap.kafka.svc:9093
+    labels:
+      default: book
+
+glyphs:
+  kafka:
+    audit-events:
+      type: topic
+      partitions: 12
+      replicas: 3
+      config:
+        retention.ms: 604800000
+        min.insync.replicas: 2
+    audit-writer:
+      type: user
+      authentication:
+        type: scram-sha-512
+      authorization:
+        type: simple
+        acls:
+          - resource:
+              type: topic
+              name: audit-events
+              patternType: literal
+            operations: [Create, Describe, Write]
+          - resource:
+              type: group
+              name: audit-writer
+              patternType: prefix
+            operations: [Read]

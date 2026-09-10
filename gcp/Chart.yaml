@@ -1,0 +1,14 @@
+apiVersion: v2
+name: gcp
+version: 1.0.0
+description: this has all the definitions of gcp infrastructure
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com
+  - name: laaledesiempre
+    email: laaledesiempre@disroot.org

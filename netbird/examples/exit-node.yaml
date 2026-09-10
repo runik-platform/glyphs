@@ -1,0 +1,40 @@
+# Safe full-tunnel primitive. It renders a 0.0.0.0/0 route and the ICMP policy
+# clients need to reach the routing peers. DNS is configured separately.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  roaming-clients:
+    type: netbird-group
+    name: roaming-clients
+    labels:
+      access-mode: full-tunnel
+      default: book
+  exit-routers:
+    type: netbird-group
+    name: exit-routers
+    labels:
+      peer-role: exit-router
+      default: book
+  managed-device:
+    type: netbird-posture-check
+    name: managed-device
+    labels:
+      trust: managed
+      default: book
+
+glyphs:
+  netbird:
+    managed-client-egress:
+      type: exitNode
+      sourceGroupsSelector:
+        access-mode: full-tunnel
+      routingPeerGroupsSelector:
+        peer-role: exit-router
+      sourcePostureChecksSelector:
+        trust: managed
+      autoApply: false
+      metric: 100

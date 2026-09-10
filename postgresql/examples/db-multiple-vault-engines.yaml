@@ -1,0 +1,75 @@
+# Two database engines selected exactly like two KV engines: the selected
+# secret-store owns both its Vault connection and its databasePath root.
+name: multi-engine
+
+chapter:
+  name: apps
+
+spellbook:
+  name: test-book
+
+lexicon:
+  shared-pg:
+    type: postgres
+    managerSuperuser: true
+    labels:
+      default: book
+
+  primary-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    databasePath: db
+    labels:
+      database: primary
+
+  analytics-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    databasePath: analytics-db
+    labels:
+      database: analytics
+
+glyphs:
+  postgresql:
+    app:
+      type: db
+      databaseName: app
+      credentials:
+        serviceAccount: multi-engine
+        authRole: app-db
+        secretName: app-pg
+      vaultSelector:
+        database: primary
+
+    reports:
+      type: db
+      databaseName: reports
+      credentials:
+        serviceAccount: multi-engine
+        authRole: reports-db
+        secretName: reports-pg
+      vaultSelector:
+        database: analytics
+
+  vault:
+    app-db:
+      type: prolicy
+      nameOverride: app-db
+      serviceAccount: multi-engine
+      selector:
+        database: primary
+
+    reports-db:
+      type: prolicy
+      nameOverride: reports-db
+      serviceAccount: multi-engine
+      selector:
+        database: analytics

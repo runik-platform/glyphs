@@ -1,0 +1,17 @@
+spellbook:
+  name: test-postgresql
+  chapters:
+    - databases
+
+chapter:
+  name: databases
+
+glyphs:
+  postgresql:
+    minimal-db:
+      type: cluster
+      description: Minimal PostgreSQL cluster
+      # Meta default is backup-by-default; disable here to keep the example
+      # minimal (no s3-provider lexicon required for rendering).
+      backup:
+        enabled: false

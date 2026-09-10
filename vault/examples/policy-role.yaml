@@ -1,0 +1,35 @@
+lexicon:
+  - chapter: base-system
+    skipVerify: true
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    serviceAccount: vault
+    authPath: k8s-path-auth
+    secretPath: kv
+    labels:
+      default: book
+
+glyphs:
+  vault:
+    # Policy and role can have independent names; policies links the role.
+    - type: policy
+      nameOverride: split-policy
+      paths:
+        - path: transit/encrypt/split-app
+          capabilities: [update]
+        - path: transit/decrypt/split-app
+          capabilities: [update]
+
+    - type: role
+      nameOverride: split-role
+      policies:
+        - split-policy
+      serviceAccount: split-app
+      tokenPeriod: 3600
+
+    # The existing public contract remains available as a metaglyph.
+    - type: prolicy
+      nameOverride: compatible-access
+      serviceAccount: compatible-app

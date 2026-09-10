@@ -1,0 +1,38 @@
+name: search-app
+
+chapter:
+  name: apps
+
+spellbook:
+  name: test-book
+
+lexicon:
+  shared-elastic:
+    type: elasticsearch
+    namespace: elastic-infra
+    host: shared-elastic-es-http.elastic-infra.svc
+    port: "9200"
+    tls:
+      enabled: false
+    labels:
+      default: book
+  intro-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+
+glyphs:
+  elasticsearch:
+    search-app:
+      type: index
+      indexName: search-app
+      role: read-write
+  vault:
+    prolicy:
+      type: prolicy
+      serviceAccount: search-app

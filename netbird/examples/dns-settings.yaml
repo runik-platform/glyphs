@@ -1,0 +1,25 @@
+# NetBirdDNSSettings — disables NetBird DNS management for peers in the
+# selected groups (e.g. hosts that run their own resolver).
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  self-resolver:
+    type: netbird-group
+    name: self-resolver
+    labels:
+      dns: self
+      default: book
+
+glyphs:
+  netbird:
+    self-resolver:
+      type: group
+
+    account-dns-defaults:
+      type: dnsSettings
+      groupsSelector:
+        dns: self

@@ -1,0 +1,43 @@
+# Shared CNPG cluster. The Vault DB engine is ON BY DEFAULT because a
+# secret-store is present in the lexicon below — no flag needed. Emits:
+# Cluster + superuser secret + DatabaseSecretEngineConfig (via the generic
+# vault.databaseEngine glyph). Consumed later by `type: db` (see db.yaml).
+# (Opt out with `dbEngine: {enabled: false}`; with no vault in the lexicon it
+# is simply skipped and the cluster renders as before.)
+name: shared-pg
+
+chapter:
+  name: databases
+
+spellbook:
+  name: test-book
+
+lexicon:
+  intro-vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: the-yaml-life
+    secretPath: secret
+    labels:
+      default: book
+
+glyphs:
+  postgresql:
+    shared-pg:
+      type: cluster
+      # no flag needed — vault in lexicon ⇒ superuser secret + Vault DB engine
+      # keep the snapshot self-contained (no s3-provider lexicon needed)
+      backup:
+        enabled: false
+      # Required during migration before per-spell connections start reusing
+      # the producer-owned manager Secret. Explicit false must remain false.
+      dbEngine:
+        # Existing shared producer mounts remain explicit/configurable. New
+        # per-spell consumers derive their roots from secret-store.databasePath.
+        databaseMount: database
+        rootRotation: false
+      instances: 3
+      storage:
+        size: 50Gi

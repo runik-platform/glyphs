@@ -1,0 +1,14 @@
+apiVersion: v2
+name: cockroachdb
+version: 1.1.0
+description: CockroachDB bootstrap and database consumer glyph for Runik
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com
+  - name: laaledesiempre
+    email: laaledesiempre@disroot.org

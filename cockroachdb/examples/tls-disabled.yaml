@@ -1,0 +1,41 @@
+name: insecure-consumer
+chapter:
+  name: development
+spellbook:
+  name: test-book
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    authPath: test-book
+    secretPath: secret
+    labels:
+      default: book
+  crdb-insecure:
+    type: cockroachdb
+    namespace: cockroachdb
+    host: crdb-insecure-public.cockroachdb.svc
+    tls:
+      enabled: false
+    labels:
+      name: crdb-insecure
+      default: book
+glyphs:
+  cockroachdb:
+    bootstrap:
+      type: bootstrap
+      selector:
+        name: crdb-insecure
+      backup:
+        enabled: true
+        uri: s3://example-backups?AUTH=implicit&AWS_ENDPOINT=http://s3.s3.svc:7070&AWS_REGION=us-east-1&AWS_USE_PATH_STYLE=true
+    insecure-consumer:
+      type: database
+      selector:
+        name: crdb-insecure
+  vault:
+    access:
+      type: prolicy
+      serviceAccount: insecure-consumer

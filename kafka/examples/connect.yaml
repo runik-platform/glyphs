@@ -1,0 +1,30 @@
+spellbook:
+  name: example
+chapter:
+  name: integrations
+
+glyphs:
+  kafka:
+    integrations:
+      type: connect
+      version: 4.3.1
+      replicas: 2
+      bootstrapServers: events-kafka-bootstrap.kafka.svc:9093
+      tls:
+        trustedCertificates:
+          - secretName: events-cluster-ca-cert
+            certificate: ca.crt
+      config:
+        config.storage.replication.factor: 3
+        offset.storage.replication.factor: 3
+        status.storage.replication.factor: 3
+    object-store-sink:
+      type: connector
+      connectCluster: integrations
+      class: io.aiven.kafka.connect.s3.AivenKafkaConnectS3SinkConnector
+      tasksMax: 3
+      autoRestart:
+        enabled: true
+      config:
+        topics: audit-events
+        aws.s3.bucket.name: audit-archive

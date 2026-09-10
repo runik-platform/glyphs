@@ -1,0 +1,79 @@
+name: runic-indexer-pattern-test
+
+# Example showing runicIndexer pattern for argo-events
+# EventSource → Sensor → published WorkflowTemplate target
+
+# Consolidated lexicon received by the glyph
+lexicon:
+  # EventBus
+  test-eventbus:
+    type: event-bus
+    labels:
+      purpose: test
+      default: book
+
+  # EventSource (minimalista)
+  test-webhook:
+    type: event-source
+    labels:
+      purpose: test
+      source: webhook
+      default: book
+
+  # Lightweight target published through appendix.lexicon by its owning spell
+  test-trigger:
+    type: workflow-trigger
+    labels:
+      purpose: test
+      action: trigger-workflow
+      default: book
+    sensorSelector:
+      purpose: test-automation
+    template: test-workflow-template
+    namespace: workflows
+    match:
+      action: test
+    parameters:
+      revision:
+        from: body.revision
+
+# Argo Events glyphs (use 'glyphs' key for kaster chart)
+glyphs:
+  argo-events:
+    # EventSource - finds eventbus via selector
+    webhook-source:
+      type: eventSource
+      selector:
+        purpose: test  # Finds test-eventbus
+      webhookType: webhook
+      webhook:
+        test:
+          endpoint: /test
+          port: "12000"
+          method: POST
+
+    # Sensor - finds eventbus, eventsource, and triggers via selectors
+    workflow-sensor:
+      type: sensor
+      labels:
+        purpose: test-automation
+      selector:
+        purpose: test  # Finds test-eventbus
+      eventSourceSelector:
+        purpose: test
+        source: webhook  # Finds test-webhook
+      template:
+        serviceAccountName: test-sa
+
+# Service Account
+serviceAccount:
+  enabled: true
+  name: test-sa
+
+# RBAC
+rbac:
+  enabled: true
+  rules:
+    - apiGroups: ["argoproj.io"]
+      resources: ["workflows", "workflowtemplates"]
+      verbs: ["get", "list", "create"]

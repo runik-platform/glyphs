@@ -1,0 +1,37 @@
+# NetBirdRoute — CIDR route distributed to peer groups, ACL-controlled by
+# another group. Network router peer and distribution groups both resolved
+# from the lexicon.
+
+spellbook:
+  name: my-app
+chapter:
+  name: production
+
+lexicon:
+  routers:
+    type: netbird-group
+    name: routers
+    labels:
+      role: router
+      default: book
+  employees:
+    type: netbird-group
+    name: employees
+    labels:
+      role: employee
+      default: book
+
+glyphs:
+  netbird:
+    office-subnet:
+      type: route
+      description: Office 10.50.0.0/16 via router group
+      networkId: office-net
+      network: 10.50.0.0/16
+      peerGroupsSelector:
+        role: router
+      groupsSelector:
+        role: employee
+      enabled: true
+      masquerade: true
+      metric: 100

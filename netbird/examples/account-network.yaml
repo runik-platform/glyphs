@@ -1,0 +1,21 @@
+# Account-plane Network. Publishing the matching lexicon entry lets resources
+# and routers select it without coupling them to this glyph key.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  edge-services:
+    type: netbird-network
+    name: edge-services
+    labels:
+      network-class: edge-services
+      default: book
+
+glyphs:
+  netbird:
+    edge-services:
+      type: accountNetwork
+      description: Services reachable through enrolled edge routers

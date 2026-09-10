@@ -1,0 +1,59 @@
+spellbook:
+  name: example
+chapter:
+  name: operations
+lexicon:
+  shared-events:
+    type: kafka
+    clusterName: events
+    labels:
+      default: book
+
+glyphs:
+  kafka:
+    archive-brokers:
+      type: nodePool
+      replicas: 3
+      roles: [broker]
+      storage:
+        type: jbod
+        volumes:
+          - id: 0
+            type: persistent-claim
+            size: 500Gi
+            kraftMetadata: shared
+    events-http:
+      type: bridge
+      replicas: 2
+      bootstrapServers: events-kafka-bootstrap:9092
+    events-mirror:
+      type: mirrorMaker2
+      version: 4.3.1
+      target:
+        alias: recovery
+        bootstrapServers: recovery-kafka-bootstrap:9092
+        config:
+          config.storage.replication.factor: 3
+          offset.storage.replication.factor: 3
+          status.storage.replication.factor: 3
+      mirrors:
+        - source:
+            alias: events
+            bootstrapServers: events-kafka-bootstrap:9092
+          sourceConnector:
+            tasksMax: 3
+            config:
+              replication.factor: 3
+              offset-syncs.topic.replication.factor: 3
+              sync.topic.acls.enabled: "false"
+          checkpointConnector:
+            tasksMax: 1
+            config:
+              checkpoints.topic.replication.factor: 3
+              sync.group.offsets.enabled: "true"
+          topicsPattern: ".*"
+          groupsPattern: ".*"
+    after-scale-out:
+      type: rebalance
+      mode: add-brokers
+      brokers: [6, 7, 8]

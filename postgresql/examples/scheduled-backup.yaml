@@ -1,0 +1,25 @@
+spellbook:
+  name: test-postgresql
+  chapters:
+    - databases
+
+chapter:
+  name: databases
+
+# Per-CRD glyph for a ScheduledBackup. Targets a Cluster by name (the
+# Cluster itself must be created separately via type: cluster or instance).
+# Retention is NOT a field of ScheduledBackup — it lives on the Cluster.
+glyphs:
+  postgresql:
+    nightly-snapshot:
+      type: scheduledBackup
+      cluster: production-db
+      schedule: "0 0 3 ? * *"   # daily 03:00 (Quartz 6-field)
+      method: barmanObjectStore
+      backupOwnerReference: self
+
+    every-six-hours:
+      type: scheduledBackup
+      cluster: production-db
+      schedule: "0 0 0/6 ? * *"  # every 6 hours
+      backupOwnerReference: self

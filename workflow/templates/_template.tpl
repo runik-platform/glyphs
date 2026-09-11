@@ -11,7 +11,7 @@ Parameters (index . 1):
   clusterScope  render ClusterWorkflowTemplate             [optional]
   labels        additional labels                          [optional]
   annotations   resource annotations                       [optional]
-  spec          native Argo WorkflowTemplate spec
+  spec          native Argo WorkflowTemplate spec, including synchronization
 */}}
 
 {{- define "workflow.template" -}}

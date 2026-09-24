@@ -1,0 +1,27 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    active-directory:
+      type: activeDirectoryIdentityProvider
+      namespace: pinniped-supervisor
+      spec:
+        host: ad.example.com:636
+        bind:
+          secretName: active-directory-bind-account
+        userSearch:
+          base: DC=example,DC=com
+          filter: "(&(objectClass=person)(userPrincipalName={}))"
+          attributes:
+            username: userPrincipalName
+            uid: objectGUID
+        groupSearch:
+          base: DC=example,DC=com
+        tls:
+          certificateAuthorityDataSource:
+            kind: Secret
+            name: active-directory-ca
+            key: ca.crt

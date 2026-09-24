@@ -1,0 +1,58 @@
+name: forgejo-managed-test
+chapter:
+  name: intro
+spellbook:
+  name: test-book
+lexicon:
+  pg-infra:
+    type: postgres
+    host: pg-infra-rw.pg-infra.svc
+    port: "5432"
+    labels:
+      role: shared
+      default: book
+  s3-versity:
+    type: s3-provider
+    endpoint: http://s3.s3.svc:7070
+    region: us-east-1
+    labels:
+      role: shared
+      default: book
+glyphs:
+  forgejo:
+    forgejo-next:
+      type: instance
+      spec:
+        managementPolicy: Managed
+        deletionPolicy: Retain
+        image: codeberg.org/forgejo/forgejo:16.0.2-rootless
+        rootless: true
+        connection:
+          adminTokenSecretRef:
+            name: forgejo-operator-admin
+            key: token
+        postgres:
+          selector:
+            role: shared
+          existing:
+            databaseSecretRef: {name: forgejo-pg, key: database}
+            credentialsSecretRef: {name: forgejo-pg}
+            usernameKey: username
+            passwordKey: password
+            sslMode: disable
+        objectStorage:
+          selector:
+            role: shared
+          existing:
+            credentialsSecretRef: {name: forgejo-storage}
+            bucketSecretRef: {name: forgejo-storage, key: S3_BUCKET}
+            secure: false
+        persistence:
+          data: {existingClaim: forgejo-data, mountPath: /data}
+          config: {existingClaim: forgejo-config, mountPath: /var/lib/gitea}
+        workload:
+          name: forgejo-managed
+          replicas: 0
+          bootstrapAdmin: false
+        ingress:
+          managed: false

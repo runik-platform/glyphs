@@ -8,6 +8,14 @@ chapter:
   name: production
 
 lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
   routers:
     type: netbird-group
     name: routers

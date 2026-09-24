@@ -1,0 +1,13 @@
+apiVersion: v2
+name: argocd-image-updater
+version: 1.0.0
+description: Argo CD Image Updater custom resource glyphs for Runik
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+  - https://github.com/argoproj-labs/argocd-image-updater
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com

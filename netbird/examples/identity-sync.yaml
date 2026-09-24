@@ -1,0 +1,35 @@
+# Minimal complete Keycloak identity source. The credential Secret is created
+# separately in the same namespace and is only referenced here.
+
+spellbook:
+  name: netbird
+chapter:
+  name: networking
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    keycloak-members:
+      type: identitySync
+      instanceRef: netbird
+      namespace: netbird
+      provider:
+        baseUrl: https://sso.example.com
+        realm: tyl
+        clientId: netbird-identity-sync
+        credentialsSecretRef:
+          name: netbird-keycloak-client
+          key: client-secret
+      realmRoles:
+        - fwck-users
+        - flaners
+        - tyl-devs

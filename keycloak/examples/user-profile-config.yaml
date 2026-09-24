@@ -1,0 +1,42 @@
+name: keycloak-user-profile-config
+
+glyphs:
+  keycloak:
+    - type: clusterRealm
+      name: cluster-realm-profile
+      realmName: cluster-profile
+      clusterKeycloakRef: keycloak
+      userProfileConfig:
+        attributes:
+          - name: lastName
+            displayName: '${lastName}'
+            permissions:
+              view:
+                - admin
+                - user
+              edit:
+                - admin
+                - user
+            validations:
+              length:
+                max:
+                  intVal: 255
+
+    - type: realm
+      name: realm-profile
+      realmName: namespaced-profile
+      keycloakRef: keycloak
+      userProfileConfig:
+        unmanagedAttributePolicy: ADMIN_EDIT
+        attributes:
+          - name: department
+            displayName: Department
+            permissions:
+              view:
+                - admin
+                - user
+              edit:
+                - admin
+            required:
+              roles:
+                - admin

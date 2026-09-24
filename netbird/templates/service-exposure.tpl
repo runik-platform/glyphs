@@ -29,6 +29,7 @@ unidirectional rules; advanced consumers may provide rules directly.
 {{- define "netbird.serviceExposure" -}}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.serviceExposure") }}
 {{- $network := get (include "netbird.networkEntry" (list $root $definition.networkRef (default (dict) $definition.networkSelector) "netbird.serviceExposure network") | fromJson) "entry" -}}
 {{- $routerRef := required "netbird.serviceExposure: selected network must publish routerRef" $network.routerRef -}}
 {{- $_ := required "netbird.serviceExposure: selected network routerRef.name is required" $routerRef.name -}}
@@ -45,11 +46,15 @@ unidirectional rules; advanced consumers may provide rules directly.
 {{ include "netbird.group" (list $root (dict
   "name" $groupName
   "namespace" $namespace
+  "instanceRef" $definition.instanceRef
+  "instanceSelector" $definition.instanceSelector
 )) }}
 
 {{ include "netbird.networkResource" (list $root (dict
   "name" $resourceName
   "namespace" $namespace
+  "instanceRef" $definition.instanceRef
+  "instanceSelector" $definition.instanceSelector
   "networkRouterRef" $routerRef
   "serviceRef" (dict "name" $serviceName)
   "groups" (list $groupName)
@@ -75,10 +80,12 @@ unidirectional rules; advanced consumers may provide rules directly.
 {{ include "netbird.policy" (list $root (dict
   "name" (default (printf "%s-%s-access" $accessKey $accessName) $grant.policyName)
   "namespace" $namespace
+  "instanceRef" $definition.instanceRef
+  "instanceSelector" $definition.instanceSelector
   "description" (default (printf "Allow %s to reach %s" $accessKey $serviceName) $grant.description)
   "sourceGroupRefs" $sourceGroupRefs
   "destinationGroupRefs" (list $groupName)
   "rules" $rules
 )) }}
 {{- end -}}
-{{- end -}}
+{{ end }}

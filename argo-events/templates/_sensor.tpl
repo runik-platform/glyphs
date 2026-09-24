@@ -74,6 +74,20 @@ Example glyphDefinition:
 {{- $resolvedTriggers := list }}
 {{- range $trigger := $triggers }}
   {{- $resolvedTrigger := deepCopy $trigger }}
+  {{- if hasKey $trigger "generateName" }}
+    {{- if not (kindIs "map" $trigger.generateName) }}
+      {{- fail (printf "workflow-trigger '%s' generateName must be a map" $trigger.name) }}
+    {{- end }}
+    {{- $generateNameSources := 0 }}
+    {{- range $field := list "from" "dataTemplate" "value" }}
+      {{- if hasKey $trigger.generateName $field }}
+        {{- $generateNameSources = add1 $generateNameSources }}
+      {{- end }}
+    {{- end }}
+    {{- if ne $generateNameSources 1 }}
+      {{- fail (printf "workflow-trigger '%s' generateName requires exactly one of from, dataTemplate or value" $trigger.name) }}
+    {{- end }}
+  {{- end }}
   {{- if $trigger.readingSelector }}
     {{- if $trigger.template }}
       {{- fail (printf "workflow-trigger '%s' cannot combine template and readingSelector" $trigger.name) }}
@@ -605,8 +619,22 @@ spec:
                 {{- end }}
           {{/* Keep resource parameter bindings on ArgoWorkflowTrigger.
                Trigger-level bindings target TriggerTemplate instead. */}}
-          {{- if $trigger.parameters }}
+          {{- if or $trigger.generateName $trigger.parameters }}
           parameters:
+            {{- with $trigger.generateName }}
+            - src:
+                dependencyName: {{ $trigger.name }}
+                {{- with .from }}
+                dataKey: {{ . }}
+                {{- end }}
+                {{- with .dataTemplate }}
+                dataTemplate: {{ . | quote }}
+                {{- end }}
+                {{- if hasKey . "value" }}
+                value: {{ .value | quote }}
+                {{- end }}
+              dest: metadata.generateName
+            {{- end }}
             {{- $parameterIndex := 0 }}
             {{- range $parameterName, $parameter := $trigger.parameters }}
               {{- $hasSource := not (kindIs "map" $parameter) }}

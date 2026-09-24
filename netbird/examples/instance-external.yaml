@@ -1,0 +1,58 @@
+# The singleton Management and Dashboard live outside this cluster. Relay and
+# STUN/TURN locations are referenced only; the operator creates no workloads
+# for components in external mode.
+
+spellbook:
+  name: netbird
+chapter:
+  name: networking
+
+glyphs:
+  netbird:
+    external-control-plane:
+      type: instance
+      namespace: netbird
+      management:
+        mode: external
+        endpoint: https://management.example.com
+        publicEndpoint: https://netbird.example.com
+        bootstrapSecretRef: { name: external-bootstrap, key: token }
+      dashboard:
+        mode: external
+        endpoint: https://netbird.example.com
+      signals:
+        - name: primary
+          location: fwck
+          mode: external
+          endpoint: grpcs://signal-fwck.example.com:443
+      relays:
+        - name: fwck
+          location: fwck
+          mode: external
+          endpoint: rels://relay-fwck.example.com:443
+        - name: fwhq
+          location: fwhq
+          mode: external
+          endpoint: rels://relay-fwhq.example.com:443
+      stunTurns:
+        - name: fwck
+          location: fwck
+          mode: external
+          endpoints: [stun:stun-fwck.example.com:3478]
+        - name: fwhq
+          location: fwhq
+          mode: external
+          endpoints: [turns:turn-fwhq.example.com:5349]
+          credentialSecretRef: { name: netbird-turn, key: shared-secret }
+      database:
+        secretRef: { name: netbird-pg-app, key: uri }
+      encryptionKeySecretRef: { name: netbird-encryption, key: key }
+      oidc:
+        issuer: https://sso.example.com/realms/netbird
+        clientID: netbird
+        clientSecretRef: { name: netbird-oidc, key: client-secret }
+      bootstrap:
+        accountName: example
+        credentialSecretRef: { name: netbird-owner-api-key, key: NB_API_KEY }
+      lifecycle:
+        deletionPolicy: DeleteRuntime

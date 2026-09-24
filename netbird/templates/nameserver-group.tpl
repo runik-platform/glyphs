@@ -21,6 +21,7 @@ Usage: {{- include "netbird.nameserverGroup" (list $root $glyph) }}
 {{- define "netbird.nameserverGroup" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.nameserverGroup") }}
 {{- $groups := get (include "netbird.resolveRefs" (list $root (default (list) $definition.groupRefs) (default (dict) $definition.groupsSelector) "netbird-group" "netbird.nameserverGroup groups") | fromJson) "refs" }}
 ---
 apiVersion: netbird.io/v1alpha1
@@ -71,4 +72,4 @@ spec:
     - {{ $g | quote }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

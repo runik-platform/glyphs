@@ -13,6 +13,7 @@ Router: peerRef/peerSelector (netbird-peer) XOR
 {{- define "netbird.accountNetworkRouter" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.accountNetworkRouter") }}
 {{- $networkRef := get (include "netbird.singleRef" (list $root $definition.networkRef (default (dict) $definition.networkSelector) "netbird-network" "netbird.accountNetworkRouter network") | fromJson) "ref" -}}
 {{- $peerRefs := list -}}
 {{- if or $definition.peerRef $definition.peerSelector -}}
@@ -53,4 +54,4 @@ spec:
   enabled: {{ if hasKey $definition "enabled" }}{{ $definition.enabled }}{{ else }}true{{ end }}
   masquerade: {{ if hasKey $definition "masquerade" }}{{ $definition.masquerade }}{{ else }}true{{ end }}
   metric: {{ if hasKey $definition "metric" }}{{ $definition.metric }}{{ else }}9999{{ end }}
-{{- end }}
+{{ end }}

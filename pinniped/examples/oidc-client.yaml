@@ -1,0 +1,23 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    dashboard:
+      type: oidcClient
+      namespace: pinniped-supervisor
+      spec:
+        allowedRedirectURIs:
+          - https://dashboard.example.com/callback
+        allowedGrantTypes:
+          - authorization_code
+          - refresh_token
+        allowedScopes:
+          - openid
+          - offline_access
+          - username
+          - groups
+        tokenLifetimes:
+          idTokenSeconds: 300

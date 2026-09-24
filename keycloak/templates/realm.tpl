@@ -19,6 +19,7 @@ Optional Configuration:
 - glyphDefinition.passwordPolicy: List of password policy rules
 - glyphDefinition.themes: Theme configuration matching the operator CRD
 - glyphDefinition.sessions: Session configuration matching the operator CRD
+- glyphDefinition.userProfileConfig: User profile configuration matching the operator CRD
 - glyphDefinition.eventConfig: Event logging configuration
 - glyphDefinition.tokenSettings: Token lifetime settings
 
@@ -63,6 +64,10 @@ spec:
   {{- end }}
   {{- with $glyphDefinition.sessions }}
   sessions:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $glyphDefinition.userProfileConfig }}
+  userProfileConfig:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- if $glyphDefinition.eventConfig }}

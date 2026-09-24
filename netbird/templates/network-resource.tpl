@@ -15,6 +15,7 @@ Usage: {{- include "netbird.networkResource" (list $root $glyph) }}
 {{- define "netbird.networkResource" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.networkResource") }}
 {{- $router := required "netbird.networkResource: networkRouterRef is required" $definition.networkRouterRef -}}
 {{- $service := required "netbird.networkResource: serviceRef is required" $definition.serviceRef -}}
 {{- $explicitGroups := list -}}
@@ -55,4 +56,4 @@ spec:
     - name: {{ $group | quote }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

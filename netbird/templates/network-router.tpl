@@ -17,6 +17,7 @@ Usage: {{- include "netbird.networkRouter" (list $root $glyph) }}
 {{- define "netbird.networkRouter" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.networkRouter") }}
 {{- $dnsZoneRef := get (include "netbird.singleRef" (list $root $definition.dnsZoneRef (default (dict) $definition.dnsZoneSelector) "netbird-dnszone" "netbird.networkRouter DNS zone") | fromJson) "ref" }}
 ---
 apiVersion: netbird.io/v1alpha1
@@ -48,4 +49,4 @@ spec:
   workloadOverride:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-{{- end }}
+{{ end }}

@@ -1,0 +1,31 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    corporate-directory:
+      type: ldapIdentityProvider
+      namespace: pinniped-supervisor
+      spec:
+        host: ldap.example.com:636
+        bind:
+          secretName: ldap-bind-account
+        userSearch:
+          base: ou=users,dc=example,dc=com
+          filter: "(&(objectClass=person)(uid={}))"
+          attributes:
+            username: uid
+            uid: entryUUID
+        groupSearch:
+          base: ou=groups,dc=example,dc=com
+          filter: "(&(objectClass=groupOfNames)(member={}))"
+          userAttributeForFilter: dn
+          attributes:
+            groupName: cn
+        tls:
+          certificateAuthorityDataSource:
+            kind: ConfigMap
+            name: corporate-directory-ca
+            key: ca.crt

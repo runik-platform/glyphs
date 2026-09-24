@@ -28,6 +28,7 @@ Usage: {{- include "netbird.group" (list $root $glyph) }}
 {{- define "netbird.group" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.group") }}
 ---
 apiVersion: netbird.io/v1alpha1
 kind: Group
@@ -47,4 +48,4 @@ metadata:
   {{- end }}
 spec:
   name: {{ default $definition.name $definition.nbName | quote }}
-{{- end }}
+{{ end }}

@@ -1,4 +1,4 @@
-# Safe full-tunnel primitive. It renders a 0.0.0.0/0 route and the ICMP policy
+# Safe full-tunnel primitive. It renders a 0.0.0.0/0 route and the traffic policy
 # clients need to reach the routing peers. DNS is configured separately.
 
 spellbook:
@@ -7,6 +7,14 @@ chapter:
   name: production
 
 lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
   roaming-clients:
     type: netbird-group
     name: roaming-clients

@@ -20,6 +20,7 @@ Usage: {{- include "netbird.postureCheck" (list $root $glyph) }}
 {{- define "netbird.postureCheck" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.postureCheck") }}
 ---
 apiVersion: netbird.io/v1alpha1
 kind: NetBirdPostureCheck
@@ -44,4 +45,4 @@ spec:
   checks:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-{{- end }}
+{{ end }}

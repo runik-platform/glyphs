@@ -1,0 +1,48 @@
+spellbook:
+  name: image-updater-test
+chapter:
+  name: production
+
+lexicon:
+  default-image-writeback:
+    type: argocd-image-writeback
+    writeBackConfig:
+      method: git
+      gitConfig:
+        repository: ssh://git@git.example.com:2222/example/config.git
+        branch: 'main:image-updater-{{.SHA256}}'
+    labels:
+      default: book
+
+glyphs:
+  argocd-image-updater:
+    application-images:
+      type: imageUpdater
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
+      spec:
+        commonUpdateSettings:
+          updateStrategy: digest
+        applicationRefs:
+          - namePattern: api
+            writeBackConfig:
+              gitConfig:
+                writeBackTarget: helmvalues:/applications/api.yaml
+            images:
+              - alias: api
+                imageName: registry.example.com/example/api:latest
+                manifestTargets:
+                  helm:
+                    spec: image
+          - namePattern: web
+            writeBackConfig:
+              gitConfig:
+                writeBackTarget: helmvalues:/applications/web.yaml
+            images:
+              - alias: web
+                imageName: registry.example.com/example/web:latest
+                manifestTargets:
+                  helm:
+                    name: image.repository
+                    tag: image.tag

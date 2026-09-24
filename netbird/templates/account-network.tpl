@@ -14,6 +14,7 @@ should discover this Network through networkSelector.
 {{- define "netbird.accountNetwork" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.accountNetwork") }}
 {{- if and (hasKey $definition "enabled") (not $definition.enabled) -}}
   {{- fail "netbird.accountNetwork: enabled=false is unsupported by the NetBird Networks API; delete the CR to delete the Network" -}}
 {{- end }}
@@ -38,4 +39,4 @@ spec:
   name: {{ default $definition.name $definition.nbName | quote }}
   description: {{ default "" $definition.description | quote }}
   enabled: true
-{{- end }}
+{{ end }}

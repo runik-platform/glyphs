@@ -1,0 +1,21 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    github:
+      type: githubIdentityProvider
+      namespace: pinniped-supervisor
+      spec:
+        allowAuthentication:
+          organizations:
+            policy: OnlyUsersFromAllowedOrganizations
+            allowed:
+              - example-org
+        client:
+          secretName: github-oauth-client
+        claims:
+          username: login:id
+          groups: slug

@@ -12,6 +12,7 @@ side must resolve exactly one name.
 {{- define "netbird.peerGroupBinding" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.peerGroupBinding") }}
 {{- $peerRef := get (include "netbird.singleRef" (list $root $definition.peerRef (default (dict) $definition.peerSelector) "netbird-peer" "netbird.peerGroupBinding peer") | fromJson) "ref" -}}
 {{- $groupRef := get (include "netbird.singleRef" (list $root $definition.groupRef (default (dict) $definition.groupSelector) "netbird-group" "netbird.peerGroupBinding group") | fromJson) "ref" }}
 ---
@@ -34,4 +35,4 @@ metadata:
 spec:
   peerRef: {{ $peerRef | quote }}
   groupRef: {{ $groupRef | quote }}
-{{- end }}
+{{ end }}

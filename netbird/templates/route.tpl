@@ -28,6 +28,7 @@ Usage: {{- include "netbird.route" (list $root $glyph) }}
 {{- define "netbird.route" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.route") }}
 {{- $peerRef := "" -}}
 {{- if or $definition.peerRef $definition.peerSelector -}}
   {{- $peerRef = get (include "netbird.singleRef" (list $root $definition.peerRef (default (dict) $definition.peerSelector) "netbird-peer" "netbird.route peer") | fromJson) "ref" -}}
@@ -103,4 +104,4 @@ spec:
   {{- if hasKey $definition "metric" }}
   metric: {{ $definition.metric }}
   {{- end }}
-{{- end }}
+{{ end }}

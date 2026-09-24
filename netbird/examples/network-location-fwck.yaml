@@ -1,0 +1,86 @@
+# FWCK-like physical LAN routed by a separately adopted remote peer. The
+# location references the enrollment but never handles its bootstrap Secret.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    fwck:
+      type: networkLocation
+      instanceRef: netbird
+      namespace: netbird
+      description: FWCK physical LAN
+      networkName: tyl-fwck-lan
+      routerGroupName: routers-tyl-fwck
+      resourceGroupName: resources-tyl-fwck-lan
+      routerResourceName: account-router-tyl-fwck
+      accessPolicyName: fwck-users-lan-access
+      routerInputPolicyName: fwck-users-prorator-access
+      routers:
+        prorator:
+          enrollmentRef: prorator
+          # The existing peerEnrollment already owns routers-tyl-fwck.
+          manageBinding: false
+      resources:
+        lan:
+          resourceName: tyl-fwck-lan-cidr
+          description: Complete site LAN
+          address: 10.42.0.0/24
+        pihole:
+          description: Local DNS
+          address: 10.42.0.2/32
+      sourceGroupRefs:
+        - fwck-users
+      access:
+        rules:
+          - name: lan
+            enabled: true
+            action: accept
+            bidirectional: false
+            protocol: all
+      routerInput:
+        rules:
+          - name: dns-udp
+            enabled: true
+            action: accept
+            bidirectional: false
+            protocol: udp
+            ports: [53]
+          - name: dns-tcp
+            enabled: true
+            action: accept
+            bidirectional: false
+            protocol: tcp
+            ports: [53]
+      metric: 100
+      masquerade: true
+      dns:
+        nameserverGroup:
+          nameservers:
+            - ip: 10.42.0.2
+              nsType: udp
+              port: 53
+          domains:
+            - fwck
+          searchDomainsEnabled: true
+        zones:
+          services:
+            domain: services.example.com
+            records:
+              storage:
+                recordType: A
+                content: 10.42.0.2
+                ttl: 300

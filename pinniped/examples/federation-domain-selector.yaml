@@ -1,0 +1,33 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+lexicon:
+  keycloak:
+    type: pinniped-identity-provider
+    name: keycloak
+    namespace: pinniped-supervisor
+    kind: OIDCIdentityProvider
+    displayName: Keycloak workforce
+    labels:
+      access: workforce
+      default: book
+  corporate-directory:
+    type: pinniped-identity-provider
+    name: corporate-directory
+    namespace: pinniped-supervisor
+    kind: LDAPIdentityProvider
+    displayName: Corporate directory
+    labels:
+      access: workforce
+
+glyphs:
+  pinniped:
+    workforce:
+      type: federationDomain
+      namespace: pinniped-supervisor
+      identityProviderSelector:
+        access: workforce
+      spec:
+        issuer: https://login.example.com

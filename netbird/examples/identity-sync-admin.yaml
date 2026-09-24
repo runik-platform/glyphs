@@ -1,0 +1,50 @@
+# Identity materialization and internal administration remain independent.
+# The binding consumes the exact provisioned group name and grants no VPN
+# access by itself.
+
+spellbook:
+  name: netbird
+chapter:
+  name: networking
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    keycloak-members:
+      type: identitySync
+      instanceRef: netbird
+      namespace: netbird
+      source: keycloak-tyl
+      provider:
+        baseUrl: https://sso.example.com
+        realm: tyl
+        clientId: netbird-identity-sync
+        credentialsSecretRef:
+          name: netbird-keycloak-client
+          key: client-secret
+      realmRoles:
+        - fwck-users
+        - flaners
+        - tyl-devs
+        - tyl-operations-staff
+      adoptExistingUsers: true
+      adoptExistingJWTGroups: true
+      pollIntervalSeconds: 30
+      deletionPolicy: Disable
+
+    operations-admin:
+      type: roleBinding
+      namespace: netbird
+      groupRef:
+        name: tyl-operations-staff
+      role: admin
+      includeServiceUsers: false

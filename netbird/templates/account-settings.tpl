@@ -23,6 +23,7 @@ Usage: {{- include "netbird.accountSettings" (list $root $glyph) }}
 {{- define "netbird.accountSettings" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.accountSettings") }}
 {{- $extra := default dict $definition.extra -}}
 {{- $trafficRefs := get (include "netbird.resolveRefs" (list $root (default (list) $extra.networkTrafficLogsGroupRefs) (default (dict) $definition.trafficLogsGroupsSelector) "netbird-group" "netbird.accountSettings traffic-log groups") | fromJson) "refs" -}}
 {{- $peerExpose := default dict $definition.peerExpose -}}
@@ -112,4 +113,4 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

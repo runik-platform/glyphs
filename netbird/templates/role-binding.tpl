@@ -3,8 +3,9 @@ Copyright (C) 2025 namenmalkv@gmail.com
 SPDX-License-Identifier: AGPL-3.0-only
 
 netbird.roleBinding creates a NetBirdRoleBinding (netbird.io/v1alpha1). It
-maps exact membership of an existing JWT-synchronized NetBird group to the
-internal admin role. Owners are never modified by the complementary operator.
+maps exact membership of an existing identity-synchronized, JWT-synchronized,
+or API-managed NetBird group to the internal admin role. Owners are never
+modified by the complementary operator.
 
 Required:
 - one of: $definition.groupRef.name | $definition.groupSelector
@@ -23,6 +24,7 @@ Usage: {{- include "netbird.roleBinding" (list $root $glyph) }}
 {{- define "netbird.roleBinding" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.roleBinding") }}
 {{- $groupRef := get (include "netbird.singleRef" (list $root $definition.groupRef (default (dict) $definition.groupSelector) "netbird-group" "netbird.roleBinding group") | fromJson) "ref" }}
 ---
 apiVersion: netbird.io/v1alpha1
@@ -57,4 +59,4 @@ spec:
   {{- if hasKey $definition "pollIntervalSeconds" }}
   pollIntervalSeconds: {{ $definition.pollIntervalSeconds }}
   {{- end }}
-{{- end }}
+{{ end }}

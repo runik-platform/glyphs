@@ -5,8 +5,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 netbird.exitNode is the safe, reusable exit-node abstraction. It emits:
 - one NetBirdRoute for 0.0.0.0/0 with masquerade and explicit distribution/ACL
   groups; and
-- one NetBirdPolicy granting the required ICMP access from those source groups
-  to the routing-peer groups, optionally gated by posture checks.
+- one NetBirdPolicy granting routed traffic from those source groups to the
+  routing-peer groups, optionally gated by posture checks.
 
 It intentionally requires routing-peer groups rather than a lone peer because
 NetBird policies target groups and the group model supports HA without changing
@@ -16,6 +16,7 @@ nameserverGroup concern.
 {{- define "netbird.exitNode" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.exitNode") }}
 {{- $sourceRefs := get (include "netbird.resolveRefs" (list $root (default (list) $definition.sourceGroupRefs) (default (dict) $definition.sourceGroupsSelector) "netbird-group" "netbird.exitNode source groups") | fromJson) "refs" -}}
 {{- $routerRefs := get (include "netbird.resolveRefs" (list $root (default (list) $definition.routingPeerGroupRefs) (default (dict) $definition.routingPeerGroupsSelector) "netbird-group" "netbird.exitNode routing peer groups") | fromJson) "refs" -}}
 {{- $postureRefs := get (include "netbird.resolveRefs" (list $root (default (list) $definition.sourcePostureCheckRefs) (default (dict) $definition.sourcePostureChecksSelector) "netbird-posture-check" "netbird.exitNode source posture checks") | fromJson) "refs" -}}
@@ -57,7 +58,7 @@ spec:
     - {{ $ref | quote }}
     {{- end }}
   accessControlGroupRefs:
-    {{- range $ref := $sourceRefs }}
+    {{- range $ref := $routerRefs }}
     - {{ $ref | quote }}
     {{- end }}
   enabled: {{ if hasKey $definition "enabled" }}{{ $definition.enabled }}{{ else }}true{{ end }}
@@ -102,9 +103,9 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    - name: icmp
+    - name: routed-traffic
       enabled: true
       action: accept
       bidirectional: false
-      protocol: icmp
-{{- end }}
+      protocol: all
+{{ end }}

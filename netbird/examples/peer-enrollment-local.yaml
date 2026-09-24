@@ -1,0 +1,38 @@
+# Local enrollment: the workload must consume the temporary Secret through an
+# optional SecretKeyRef and persist /var/lib/netbird across restarts.
+
+spellbook:
+  name: netbird
+chapter:
+  name: networking
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    cluster-router:
+      type: peerEnrollment
+      namespace: netbird
+      mode: enroll
+      peerIdentity:
+        hostname: cluster-router
+      workloadRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: cluster-router
+      enrollment:
+        secretRef:
+          name: cluster-router-enrollment
+          key: setupKey
+        expiresInSeconds: 600
+      groupRefs:
+        - routing-peers
+      deletionPolicy: Retain

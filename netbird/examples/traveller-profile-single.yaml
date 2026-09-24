@@ -1,0 +1,36 @@
+# Single exit group. Full-tunnel remains manual until autoApply is explicitly
+# enabled after the identity and router groups have converged.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    roaming:
+      type: travellerProfile
+      instanceRef: netbird
+      namespace: netbird
+      sourceGroupRefs:
+        - travellers
+      routingPeerGroupRefs:
+        - exit-routers
+      autoApply: false
+      metric: 100
+      dns:
+        nameservers:
+          - ip: 1.1.1.1
+            nsType: udp
+            port: 53
+        primary: true

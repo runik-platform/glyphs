@@ -19,6 +19,7 @@ as Default without depending on groups or posture checks.
 {{- define "netbird.policy" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.policy") }}
 {{- $state := default "present" $definition.state -}}
 {{- $sourceRefs := list -}}
 {{- $destinationRefs := list -}}
@@ -71,4 +72,4 @@ spec:
   rules:
     {{- toYaml $definition.rules | nindent 4 }}
   {{- end }}
-{{- end }}
+{{ end }}

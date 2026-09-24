@@ -1,0 +1,16 @@
+# Deprecated certManager compatibility contract.
+# New spells must use the cert-manager chart key.
+
+spellbook:
+  name: infrastructure
+chapter:
+  name: production
+
+glyphs:
+  certManager:
+    letsencrypt-legacy:
+      type: clusterIssuer
+      issuerType: aws
+      email: devops@example.com
+      aws:
+        region: us-east-1

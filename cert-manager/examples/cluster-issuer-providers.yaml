@@ -1,0 +1,41 @@
+# ClusterIssuer provider matrix.
+# This fixture must render unchanged through both Kaster and Summon.
+
+spellbook:
+  name: infrastructure
+chapter:
+  name: production
+
+glyphs:
+  cert-manager:
+    letsencrypt-aws:
+      type: clusterIssuer
+      issuerType: aws
+      email: devops@example.com
+      aws:
+        region: eu-west-1
+        hostedZoneID: Z1234567890ABC
+        role: arn:aws:iam::123456789012:role/cert-manager
+        accessKeyID: AKIAEXAMPLE
+        secret:
+          name: route53-credentials
+          key: secret-access-key
+
+    letsencrypt-gcp:
+      type: clusterIssuer
+      issuerType: gcp
+      email: devops@example.com
+      gcp:
+        projectID: example-project
+        secret:
+          name: clouddns-credentials
+          key: service-account.json
+
+    letsencrypt-cloudflare:
+      type: clusterIssuer
+      issuerType: cloudflare
+      email: devops@example.com
+      cloudflare:
+        secret:
+          name: cloudflare-api-token
+          key: api-token

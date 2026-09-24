@@ -23,6 +23,7 @@ Usage: {{- include "netbird.dnsRecord" (list $root $glyph) }}
 {{- define "netbird.dnsRecord" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.dnsRecord") }}
 {{- $explicitZones := list -}}
 {{- if $definition.zoneRef -}}{{- $explicitZones = append $explicitZones $definition.zoneRef -}}{{- end -}}
 {{- $zoneRefs := get (include "netbird.resolveRefs" (list $root $explicitZones (default (dict) $definition.zoneSelector) "netbird-dnszone" "netbird.dnsRecord zones") | fromJson) "refs" -}}
@@ -54,4 +55,4 @@ spec:
   content: {{ required "netbird.dnsRecord: content is required" $definition.content | quote }}
   ttl: {{ required "netbird.dnsRecord: ttl is required" $definition.ttl }}
 {{- end }}
-{{- end }}
+{{ end }}

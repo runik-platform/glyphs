@@ -235,6 +235,11 @@ rules:
   - apiGroups: ["argoproj.io"]
     resources: ["workflows"]
     verbs: ["create", "get", "list"]
+  # The Argo Workflow trigger resolves workflowTemplateRef before creating the
+  # Workflow, so the Sensor also needs read access to the referenced template.
+  - apiGroups: ["argoproj.io"]
+    resources: ["workflowtemplates"]
+    verbs: ["get"]
   {{- else }}
   - apiGroups: [""]
     resources: ["pods"]
@@ -276,6 +281,13 @@ metadata:
     {{- include "common.all.labels" $root | nindent 4 }}
 rules:
 {{ toYaml $p.podRbacRules | indent 2 }}
+{{ if $useWorkflow }}
+  # Argo's executor reports container results through WorkflowTaskResult CRs.
+  # Keep this on the workflow pod role; the legacy Pod mode does not need it.
+  - apiGroups: ["argoproj.io"]
+    resources: ["workflowtaskresults"]
+    verbs: ["create", "patch"]
+{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

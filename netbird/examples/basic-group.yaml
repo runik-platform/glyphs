@@ -7,6 +7,14 @@ chapter:
   name: production
 
 lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
   prod-servers:
     type: netbird-group
     name: prod-servers
@@ -19,3 +27,5 @@ glyphs:
   netbird:
     prod-servers:
       type: group
+      instanceSelector:
+        environment: production

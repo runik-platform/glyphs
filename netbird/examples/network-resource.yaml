@@ -7,6 +7,14 @@ chapter:
   name: production
 
 lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
   services:
     type: netbird-group
     name: kubernetes-services

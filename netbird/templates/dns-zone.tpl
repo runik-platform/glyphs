@@ -24,6 +24,7 @@ Usage: {{- include "netbird.dnsZone" (list $root $glyph) }}
 {{- define "netbird.dnsZone" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.dnsZone") }}
 {{- $groupRefs := get (include "netbird.resolveRefs" (list $root (default (list) $definition.distributionGroupRefs) (default (dict) $definition.groupsSelector) "netbird-group" "netbird.dnsZone distribution groups") | fromJson) "refs" }}
 ---
 apiVersion: netbird.io/v1alpha1
@@ -57,4 +58,4 @@ spec:
     - {{ $g | quote }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

@@ -11,6 +11,7 @@ Usage: {{- include "netbird.sidecarProfile" (list $root $glyph) }}
 {{- define "netbird.sidecarProfile" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.sidecarProfile") }}
 {{- $setupKeyRef := required "netbird.sidecarProfile: setupKeyRef is required" $definition.setupKeyRef }}
 ---
 apiVersion: netbird.io/v1alpha1
@@ -47,4 +48,4 @@ spec:
   containerOverride:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-{{- end }}
+{{ end }}

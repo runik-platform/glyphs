@@ -1,0 +1,15 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    workforce:
+      type: federationDomain
+      namespace: pinniped-supervisor
+      issuer: https://login.example.com
+      identityProviders:
+        - displayName: Keycloak workforce
+          kind: OIDCIdentityProvider
+          name: keycloak

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: forgejo
+version: 1.0.1
+description: Declarative Forgejo instance and API-resource glyphs for Runik
+home: https://github.com/runik-platform
+sources:
+  - https://github.com/runik-platform/runik-platform
+annotations:
+  artifacthub.io/license: AGPL-3.0-only
+maintainers:
+  - name: namen malkav
+    email: namenmalkav@gmail.com

@@ -1,0 +1,19 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    keycloak:
+      type: oidcIdentityProvider
+      namespace: pinniped-supervisor
+      issuer: https://sso.example.com/realms/workforce
+      scopes:
+        - email
+        - profile
+        - groups
+      claims:
+        username: preferred_username
+        groups: groups
+      clientSecretName: keycloak-oidc-client

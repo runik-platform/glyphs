@@ -1,6 +1,6 @@
-# NetBirdRoleBinding — promotes exact members of an existing JWT-synchronized
-# NetBird group to the internal admin role. The group is resolved through the
-# lexicon; this resource does not create the group or its users.
+# NetBirdRoleBinding — promotes exact members of an existing NetBird group to
+# the internal admin role. The group may be preprovisioned by identitySync; in
+# this example it is resolved through the lexicon.
 
 spellbook:
   name: my-app
@@ -8,6 +8,14 @@ chapter:
   name: production
 
 lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
   vpn-admins:
     type: netbird-group
     name: vpn-admins

@@ -1,0 +1,46 @@
+# Complete in-cluster NetBird control plane. The complementary operator owns
+# every listed runtime; PostgreSQL, OIDC and referenced Secrets remain external.
+
+spellbook:
+  name: netbird
+chapter:
+  name: networking
+
+glyphs:
+  netbird:
+    control-plane:
+      type: instance
+      namespace: netbird
+      management:
+        image:
+          repository: harbor.int.example/the-yaml-life/netbird-fork
+          digest: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+        publicEndpoint: https://netbird.example.com
+      dashboard:
+        image: { repository: netbirdio/dashboard, tag: v2.92.0 }
+      signals:
+        - name: primary
+          location: fwck
+          image: { repository: netbirdio/signal, tag: 0.78.2 }
+          publicEndpoint: grpc://netbird.example.com:33000
+      relays:
+        - name: primary
+          location: fwck
+          image: { repository: netbirdio/relay, tag: 0.78.2 }
+          publicEndpoint: rel://netbird.example.com:33080
+      stunTurns:
+        - name: primary
+          location: fwck
+          image: { repository: coturn/coturn, tag: 4.6.3 }
+          endpoints: [stun:netbird.example.com:3478]
+      database:
+        secretRef: { name: netbird-pg-app, key: uri }
+      encryptionKeySecretRef: { name: netbird-encryption, key: key }
+      oidc:
+        issuer: https://sso.example.com/realms/netbird
+        clientID: netbird
+        redirectURLs: [https://netbird.example.com/auth/callback]
+      bootstrap:
+        accountName: example
+        credentialSecretRef: { name: netbird-owner-api-key, key: NB_API_KEY }
+        adoptionCredentialSecretRef: { name: netbird-current-owner-api-key, key: NB_API_KEY }

@@ -1,7 +1,7 @@
 apiVersion: v2
 name: pinniped
-version: 1.0.0
-description: Pinniped identity provider glyph - OIDCIdentityProvider, FederationDomain, ClusterRoleBinding
+version: 1.1.0
+description: Declarative glyphs for Pinniped Supervisor and Concierge CRDs
 home: https://github.com/runik-platform
 sources:
   - https://github.com/vmware/pinniped

@@ -1,0 +1,35 @@
+# External peer adoption: bootstrap happens on the external host. The glyph
+# selects only by immutable peer ID and never transports or creates a Secret.
+
+spellbook:
+  name: netbird
+chapter:
+  name: networking
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    prorator:
+      type: peerEnrollment
+      namespace: netbird
+      mode: adopt
+      peerIdentity:
+        id: replace-with-stable-netbird-peer-id
+        hostname: prorator
+      settings:
+        name: prorator
+        loginExpirationEnabled: false
+        inactivityExpirationEnabled: false
+      groupRefs:
+        - routers-tyl-fwck
+      deletionPolicy: Retain
+      restoreSettingsOnDelete: true

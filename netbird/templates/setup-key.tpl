@@ -14,6 +14,7 @@ Usage: {{- include "netbird.setupKey" (list $root $glyph) }}
 {{- define "netbird.setupKey" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.setupKey") }}
 {{- $explicitGroups := list -}}
 {{- range $group := (default (list) $definition.autoGroups) -}}
   {{- if kindIs "map" $group -}}
@@ -53,4 +54,4 @@ spec:
     - name: {{ $group | quote }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

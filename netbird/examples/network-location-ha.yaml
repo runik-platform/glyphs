@@ -1,0 +1,48 @@
+# One location with two directly managed routers plus an existing router group.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    fwhq:
+      type: networkLocation
+      instanceRef: netbird
+      namespace: netbird
+      routers:
+        primary:
+          enrollmentRef:
+            name: fwhq-router-primary
+            peerName: fwhq-primary
+        secondary:
+          peerRef: fwhq-secondary
+        overflow:
+          peerGroupRef: shared-edge-routers
+      resources:
+        office:
+          address: 10.55.0.0/16
+      sourceGroupRefs:
+        - operations
+      sourcePostureCheckRefs:
+        - managed-device
+      access:
+        rules:
+          - name: office
+            enabled: true
+            action: accept
+            bidirectional: false
+            protocol: all
+      metric: 200
+      masquerade: true

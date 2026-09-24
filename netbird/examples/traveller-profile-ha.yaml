@@ -1,0 +1,45 @@
+# HA exit groups with a posture gate and an additional private split route.
+
+spellbook:
+  name: example-networking
+chapter:
+  name: production
+
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
+glyphs:
+  netbird:
+    managed-roaming:
+      type: travellerProfile
+      instanceRef: netbird
+      namespace: netbird
+      sourceGroupRefs:
+        - travelling-staff
+      routingPeerGroupRefs:
+        - exit-fwck
+        - exit-fwhq
+      sourcePostureCheckRefs:
+        - managed-device
+      autoApply: false
+      metric: 200
+      dns:
+        nameservers:
+          - ip: 10.42.0.2
+            nsType: udp
+            port: 53
+        domains:
+          - corp.example
+        searchDomainsEnabled: true
+      additionalRoutes:
+        corp:
+          description: Private corporate prefixes
+          network: 10.0.0.0/8
+          metric: 100

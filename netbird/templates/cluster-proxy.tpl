@@ -11,6 +11,7 @@ Usage: {{- include "netbird.clusterProxy" (list $root $glyph) }}
 {{- define "netbird.clusterProxy" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.clusterProxy") }}
 {{- $explicitGroups := list -}}
 {{- range $group := (default (list) $definition.groups) -}}
   {{- if kindIs "map" $group -}}
@@ -47,4 +48,4 @@ spec:
     - name: {{ $group | quote }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

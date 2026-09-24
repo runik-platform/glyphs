@@ -1,0 +1,42 @@
+name: forgejo-resources-test
+chapter:
+  name: apps
+spellbook:
+  name: test-book
+lexicon:
+  primary-forgejo:
+    type: forgejo-instance
+    resourceName: forgejo
+    namespace: forgejo
+    labels:
+      environment: production
+      default: book
+  platform-org:
+    type: forgejo-org
+    resourceName: platform
+    namespace: forgejo
+    labels:
+      owner: platform
+glyphs:
+  forgejo:
+    platform:
+      type: org
+      instanceSelector:
+        environment: production
+      spec:
+        description: Platform repositories
+        visibility: private
+    automation:
+      type: user
+      instanceSelector:
+        environment: production
+      spec:
+        email: automation@example.test
+        password: {name: automation-password, key: password}
+    runik:
+      type: repo
+      orgSelector:
+        owner: platform
+      spec:
+        description: Runik
+        private: true

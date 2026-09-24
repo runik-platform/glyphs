@@ -24,6 +24,7 @@ Usage: {{- include "netbird.token" (list $root $glyph) }}
 {{- define "netbird.token" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.token") }}
 {{- $userRef := get (include "netbird.singleRef" (list $root $definition.userRef (default (dict) $definition.userSelector) "netbird-user" "netbird.token user") | fromJson) "ref" }}
 {{- $secret := required "netbird.token: secret is required (secret.name and secret.key)" $definition.secret }}
 ---
@@ -55,4 +56,4 @@ spec:
   secretRef:
     name: {{ required "netbird.token: secret.name is required" $secret.name | quote }}
     key: {{ required "netbird.token: secret.key is required" $secret.key | quote }}
-{{- end }}
+{{ end }}

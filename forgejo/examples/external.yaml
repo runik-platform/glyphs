@@ -1,0 +1,27 @@
+name: forgejo-glyph-test
+chapter:
+  name: intro
+spellbook:
+  name: test-book
+lexicon:
+  forgejo:
+    type: forgejo-instance
+    resourceName: forgejo
+    namespace: forgejo
+    service:
+      name: forgejo
+      port: 3000
+    labels:
+      default: book
+glyphs:
+  forgejo:
+    forgejo:
+      type: instance
+      connectionSelector:
+        name: forgejo
+      spec:
+        managementPolicy: External
+        connection:
+          adminTokenSecretRef:
+            name: forgejo-operator-admin
+            key: token

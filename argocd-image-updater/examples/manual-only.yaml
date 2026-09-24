@@ -1,0 +1,24 @@
+spellbook:
+  name: image-updater-test
+chapter:
+  name: production
+
+glyphs:
+  argocd-image-updater:
+    application-images:
+      type: imageUpdater
+      writeBackProfile:
+        enabled: false
+      spec:
+        writeBackConfig:
+          method: argocd
+        applicationRefs:
+          - namePattern: api
+            images:
+              - alias: api
+                imageName: registry.example.com/example/api:latest
+                commonUpdateSettings:
+                  updateStrategy: digest
+                manifestTargets:
+                  helm:
+                    spec: image

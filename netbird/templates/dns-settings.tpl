@@ -17,6 +17,7 @@ Usage: {{- include "netbird.dnsSettings" (list $root $glyph) }}
 {{- define "netbird.dnsSettings" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.dnsSettings") }}
 {{- $groupRefs := get (include "netbird.resolveRefs" (list $root (default (list) $definition.disabledManagementGroupRefs) (default (dict) $definition.groupsSelector) "netbird-group" "netbird.dnsSettings disabled-management groups") | fromJson) "refs" }}
 ---
 apiVersion: netbird.io/v1alpha1

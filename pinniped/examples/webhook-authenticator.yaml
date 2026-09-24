@@ -1,0 +1,16 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    webhook:
+      type: webhookAuthenticator
+      spec:
+        endpoint: https://authn-webhook.example.com/authenticate
+        tls:
+          certificateAuthorityDataSource:
+            kind: ConfigMap
+            name: webhook-ca
+            key: ca.crt

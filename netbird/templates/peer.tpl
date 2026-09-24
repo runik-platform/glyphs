@@ -28,6 +28,7 @@ Usage: {{- include "netbird.peer" (list $root $glyph) }}
 {{- define "netbird.peer" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.peer") }}
 ---
 apiVersion: netbird.io/v1alpha1
 kind: NetBirdPeer
@@ -59,4 +60,4 @@ spec:
   {{- if hasKey $definition "sshEnabled" }}
   sshEnabled: {{ $definition.sshEnabled }}
   {{- end }}
-{{- end }}
+{{ end }}

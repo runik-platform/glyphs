@@ -6,6 +6,16 @@ spellbook:
 chapter:
   name: production
 
+lexicon:
+  netbird:
+    type: netbird-instance
+    namespace: netbird
+    resourceRef:
+      name: default
+    labels:
+      environment: production
+      default: book
+
 glyphs:
   netbird:
     account-dns-defaults:

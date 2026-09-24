@@ -14,6 +14,7 @@ Resource group resolution combines groupRefs and groupsSelector
 {{- define "netbird.accountNetworkResource" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 -}}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.accountNetworkResource") }}
 {{- $networkRef := get (include "netbird.singleRef" (list $root $definition.networkRef (default (dict) $definition.networkSelector) "netbird-network" "netbird.accountNetworkResource network") | fromJson) "ref" -}}
 {{- $groupRefs := get (include "netbird.resolveRefs" (list $root (default (list) $definition.groupRefs) (default (dict) $definition.groupsSelector) "netbird-group" "netbird.accountNetworkResource groups") | fromJson) "refs" }}
 ---
@@ -46,4 +47,4 @@ spec:
     - {{ $ref | quote }}
     {{- end }}
   {{- end }}
-{{- end }}
+{{ end }}

@@ -1,0 +1,21 @@
+spellbook:
+  name: pinniped-example
+chapter:
+  name: production
+
+glyphs:
+  pinniped:
+    workload-issuer:
+      type: jwtAuthenticator
+      spec:
+        issuer: https://issuer.example.com
+        audience: kubernetes
+        claims:
+          username: preferred_username
+          groups: groups
+        claimValidationRules:
+          - claim: tenant
+            requiredValue: production
+        userValidationRules:
+          - expression: "!user.username.startsWith('system:')"
+            message: usernames must not use the system prefix

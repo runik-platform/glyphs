@@ -14,6 +14,7 @@ Usage: {{- include "netbird.networkEgress" (list $root $glyph) }}
 {{- define "netbird.networkEgress" }}
 {{- $root := index . 0 -}}
 {{- $definition := index . 1 }}
+{{- $_ := include "netbird.requireInstance" (list $root $definition "netbird.networkEgress") }}
 {{- $router := required "netbird.networkEgress: networkRouterRef is required" $definition.networkRouterRef -}}
 {{- $target := required "netbird.networkEgress: target is required" $definition.target -}}
 {{- $ports := required "netbird.networkEgress: ports is required" $definition.ports -}}
@@ -42,4 +43,4 @@ spec:
     {{- toYaml $target | nindent 4 }}
   ports:
     {{- toYaml $ports | nindent 4 }}
-{{- end }}
+{{ end }}

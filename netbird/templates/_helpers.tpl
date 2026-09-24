@@ -14,6 +14,87 @@ netbird.resolveRefs receives:
 It returns JSON: {"refs": ["name", ...]}. Explicit and discovered names are
 merged and deduplicated while preserving their first-seen order.
 */}}
+
+{{/*
+netbird.instanceEntry resolves the Runik-level provider contract for the
+singleton NetBird installation. Consumers may set exactly one of instanceRef
+or instanceSelector. With neither, runicIndexer selects the default: book
+netbird-instance entry.
+
+The selected entry publishes the NetBirdInstance namespace and optionally
+resourceRef.name (default: default) or an explicit instanceId.
+*/}}
+{{- define "netbird.instanceEntry" -}}
+{{- $root := index . 0 -}}
+{{- $definition := default (dict) (index . 1) -}}
+{{- $caller := index . 2 -}}
+{{- $explicit := default "" $definition.instanceRef -}}
+{{- $selector := default (dict) $definition.instanceSelector -}}
+{{- if and (not (empty $explicit)) (not (kindIs "string" $explicit)) -}}
+  {{- fail (printf "%s: instanceRef must be a lexicon key string" $caller) -}}
+{{- end -}}
+{{- if not (kindIs "map" $selector) -}}
+  {{- fail (printf "%s: instanceSelector must be an object" $caller) -}}
+{{- end -}}
+{{- $explicitSelection := or (not (empty $explicit)) (gt (len $selector) 0) -}}
+{{- if and $explicit $selector -}}
+  {{- fail (printf "%s: instanceRef and instanceSelector are mutually exclusive" $caller) -}}
+{{- end -}}
+{{- $entries := list -}}
+{{- if $explicit -}}
+  {{- $entry := get (default (dict) $root.Values.lexicon) $explicit -}}
+  {{- if not $entry -}}
+    {{- fail (printf "%s: instanceRef %q was not found in the lexicon" $caller $explicit) -}}
+  {{- end -}}
+  {{- if not (kindIs "map" $entry) -}}
+    {{- fail (printf "%s: instanceRef %q must resolve to an object" $caller $explicit) -}}
+  {{- end -}}
+  {{- if ne (default "" $entry.type) "netbird-instance" -}}
+    {{- fail (printf "%s: instanceRef %q must have type netbird-instance" $caller $explicit) -}}
+  {{- end -}}
+  {{- $entries = list $entry -}}
+{{- else -}}
+  {{- $entries = get (include "runic-system.runic-indexer" (list $root.Values.lexicon $selector "netbird-instance" $root.Values.chapter.name) | fromJson) "results" -}}
+{{- end -}}
+{{- if and (eq (len $entries) 0) (not $explicitSelection) -}}
+  {{- dict "entry" (dict) "instanceId" "default" "legacy" true | toJson -}}
+{{- else -}}
+{{- if ne (len $entries) 1 -}}
+  {{- fail (printf "%s: exactly one netbird-instance is required, got %d" $caller (len $entries)) -}}
+{{- end -}}
+{{- $entry := index $entries 0 -}}
+{{- if not (kindIs "map" $entry) -}}
+  {{- fail (printf "%s: selected netbird-instance must be an object" $caller) -}}
+{{- end -}}
+{{- $namespace := required (printf "%s: selected netbird-instance requires namespace" $caller) $entry.namespace -}}
+{{- if not (kindIs "string" $namespace) -}}
+  {{- fail (printf "%s: selected netbird-instance namespace must be a string" $caller) -}}
+{{- end -}}
+{{- $resourceRef := default (dict) $entry.resourceRef -}}
+{{- if not (kindIs "map" $resourceRef) -}}
+  {{- fail (printf "%s: selected netbird-instance resourceRef must be an object" $caller) -}}
+{{- end -}}
+{{- $resourceName := default "default" $resourceRef.name -}}
+{{- if not (kindIs "string" $resourceName) -}}
+  {{- fail (printf "%s: selected netbird-instance resourceRef.name must be a string" $caller) -}}
+{{- end -}}
+{{- $instanceID := default (printf "%s/%s" $namespace $resourceName) $entry.instanceId -}}
+{{- if not (kindIs "string" $instanceID) -}}
+  {{- fail (printf "%s: selected netbird-instance instanceId must be a string" $caller) -}}
+{{- end -}}
+{{- dict "entry" $entry "instanceId" $instanceID | toJson -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate a consumer against its selected provider. It emits no Kubernetes
+field because both current NetBird operators are singleton controllers.
+*/}}
+{{- define "netbird.requireInstance" -}}
+{{- $resolved := include "netbird.instanceEntry" . | fromJson -}}
+{{- get $resolved "instanceId" -}}
+{{- end -}}
+
 {{- define "netbird.resolveRefs" -}}
 {{- $root := index . 0 -}}
 {{- $explicit := default (list) (index . 1) -}}

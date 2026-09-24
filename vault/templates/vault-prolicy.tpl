@@ -244,10 +244,12 @@ Parameters:
   {{- if $hasDatabaseCredentials -}}
     {{- $paths = append $paths (dict "path" (printf "%s/creds/*" $databaseCoordinates.mount) "capabilities" (list "read")) -}}
     {{- $paths = append $paths (dict "path" (printf "%s/static-creds/*" $databaseCoordinates.mount) "capabilities" (list "read")) -}}
-    {{- /* SecretEngineMount reads the root catalog before operating on its
-         exact mount path. Keep mutation scoped to this spell's mount. */ -}}
+    {{- /* SecretEngineMount reads the root catalog, manages the exact mount,
+         and reconciles its tune endpoint. Keep mutation scoped to this
+         spell's mount. */ -}}
     {{- $paths = append $paths (dict "path" "sys/mounts" "capabilities" (list "read")) -}}
     {{- $paths = append $paths (dict "path" (printf "sys/mounts/%s" $databaseCoordinates.mount) "capabilities" (list "create" "read" "update" "delete")) -}}
+    {{- $paths = append $paths (dict "path" (printf "sys/mounts/%s/tune" $databaseCoordinates.mount) "capabilities" (list "read" "update")) -}}
   {{- end -}}
   {{- range $path := $legacyDatabaseCredentialPaths -}}
     {{- $paths = append $paths (dict "path" $path "capabilities" (list "read")) -}}

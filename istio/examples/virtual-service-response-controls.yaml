@@ -1,0 +1,94 @@
+# Per-rule response controls on istio.virtualService
+#
+# A rule may reply locally (directResponse), manipulate headers, or carry a
+# timeout/retry policy. Without any of those keys a rule renders exactly as it
+# always did.
+#
+# Measured need: in one consumer's bookrack, 19 VirtualServices were written by
+# hand as freeForm manifests, and 5 of them did so ONLY because the glyph could
+# not express directResponse (1), headers (3) or timeout+retries (1).
+
+spellbook:
+  name: my-platform
+chapter:
+  name: identity
+
+lexicon:
+  internal-gateway:
+    name: internal-gateway
+    type: istio-gw
+    gateway: istio-system/internal-gateway
+    baseURL: int.platform.com
+    labels:
+      default: book
+  public-gateway:
+    name: public-gateway
+    type: istio-gw
+    gateway: istio-system/public-gateway
+    baseURL: platform.com
+    labels:
+      access: external
+
+glyphs:
+  istio:
+    # Deny a set of paths on a PUBLIC host while the same service stays fully
+    # reachable on the internal one. `prefixes` puts several URIs in ONE rule, so
+    # the 404 is a single match block evaluated before the catch-all below it.
+    #
+    # This is the shape an identity provider needs: the admin console must never
+    # be served by the public host, and an app flag that only rewrites the URLs
+    # it advertises does not stop a request that arrives anyway.
+    sso-public:
+      type: virtualService
+      enabled: true
+      # The rendered name is `<nameOverride|common.name>-<gateway.name>`, so two
+      # glyphs resolving to the SAME gateway need distinct nameOverrides or they
+      # collide on one resource name.
+      nameOverride: sso-public
+      subdomain: sso
+      selector:
+        access: external
+      host: keycloak.identity.svc.cluster.local
+      httpRules:
+        - prefixes:
+            - /admin
+            - /metrics
+            - /health
+          directResponse:
+            status: 404
+            body:
+              string: "not found\n"
+        - prefix: /
+          port: 8080
+
+    # Header manipulation: a tenant served under a brand host needs the app to
+    # see the brand name, not the gateway's.
+    tenant-branded:
+      type: virtualService
+      enabled: true
+      nameOverride: tenant-branded
+      subdomain: tenant
+      selector:
+        access: external
+      httpRules:
+        - prefix: /
+          port: 8069
+          headers:
+            request:
+              set:
+                X-Forwarded-Host: tenant.brand.com
+
+    # Timeout and retries on a slow upstream.
+    slow-portal:
+      type: virtualService
+      enabled: true
+      nameOverride: slow-portal
+      subdomain: portal
+      httpRules:
+        - prefix: /
+          port: 3000
+          timeout: 30s
+          retries:
+            attempts: 3
+            perTryTimeout: 10s
+            retryOn: gateway-error,connect-failure,refused-stream

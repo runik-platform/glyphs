@@ -23,6 +23,16 @@ Optional Configuration:
 - glyphDefinition.prefix: URL prefix for routing (defaults to /{common.name})
 - glyphDefinition.rewrite: URL rewrite target (defaults to "/")
 
+Per-rule response controls (httpRules[]):
+- prefixes: list of URI prefixes matched by ONE rule (alternative to prefix)
+- directResponse: reply locally instead of routing; `route` is then omitted, as
+  Istio rejects a rule carrying both
+- headers: request/response header manipulation, passed through verbatim
+- timeout: per-route timeout
+- retries: retry policy, passed through verbatim
+
+A rule that declares none of those renders exactly as before.
+
 Usage: {{- include "istio.virtualService" (list $root $glyph) }}
 */}}
 {{- define "istio.virtualService" }}
@@ -53,9 +63,25 @@ spec:
   {{- with $glyphDefinition.httpRules }}
   http:
   {{- range $httpRule := . }}
+    {{- if $httpRule.prefixes }}
+    - match:
+      {{- range $prefix := $httpRule.prefixes }}
+      - uri:
+          prefix: {{ $prefix }}
+      {{- end }}
+    {{- else }}
     - match:
       - uri:
           prefix: {{ default (default (printf "/%s" ( include "common.name" $root )) $glyphDefinition.prefix) $httpRule.prefix }}
+    {{- end }}
+      {{- with $httpRule.headers }}
+      headers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $httpRule.directResponse }}
+      directResponse:
+        {{- toYaml $httpRule.directResponse | nindent 8 }}
+      {{- else }}
       {{- if or $glyphDefinition.rewrite $httpRule.rewrite }}
       rewrite:
         uri: {{ default (default "/" $glyphDefinition.rewrite) $httpRule.rewrite }}
@@ -65,6 +91,14 @@ spec:
             host: {{ if (default $glyphDefinition.host $httpRule.host) }}{{ (default $glyphDefinition.host $httpRule.host) }}{{ else }}{{ include "common.name" $root }}.{{ $root.Release.Namespace }}.svc.cluster.local{{ end }}
             port:
               number: {{ default "80" $httpRule.port }}
+      {{- with $httpRule.timeout }}
+      timeout: {{ . }}
+      {{- end }}
+      {{- with $httpRule.retries }}
+      retries:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
       {{- end }}
   {{- end }}
   {{- with $glyphDefinition.tcpRules }}

@@ -230,15 +230,16 @@ Parameters:
 {{- $legacyDatabaseCredentialPaths := get (include "vault.legacyDatabaseCredentialPaths" (list $root $glyph) | fromJson) "paths" -}}
 {{- $vaultServers := get (include "runic-system.runic-indexer" (list $root.Values.lexicon (merge (default dict $glyph.selector) (dict "provider" "operator")) "secret-store" $root.Values.chapter.name) | fromJson) "results" -}}
 {{- range $vaultConf := $vaultServers -}}
+  {{- $scope := include "common.secretScope" (list $root $vaultConf (dict "namespace" $policyNamespace)) | fromJson -}}
   {{- $paths := list -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/data/%s/%s/%s/*" $vaultConf.secretPath $root.Values.spellbook.name $root.Values.chapter.name $policyNamespace) "capabilities" (list "create" "read" "update" "delete" "list")) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/metadata/%s/%s/%s/*" $vaultConf.secretPath $root.Values.spellbook.name $root.Values.chapter.name $policyNamespace) "capabilities" (list "create" "read" "update" "delete" "list")) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/data/%s/%s/publics/*" $vaultConf.secretPath $root.Values.spellbook.name $root.Values.chapter.name) "capabilities" $chapterPublicsCapabilities) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/metadata/%s/%s/publics/*" $vaultConf.secretPath $root.Values.spellbook.name $root.Values.chapter.name) "capabilities" $chapterPublicsCapabilities) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/data/%s/publics/*" $vaultConf.secretPath $root.Values.spellbook.name) "capabilities" $bookPublicsCapabilities) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/metadata/%s/publics/*" $vaultConf.secretPath $root.Values.spellbook.name) "capabilities" $bookPublicsCapabilities) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/data/%s/pipelines/*" $vaultConf.secretPath $root.Values.spellbook.name) "capabilities" (list "read" "list")) -}}
-  {{- $paths = append $paths (dict "path" (printf "%s/metadata/%s/pipelines/*" $vaultConf.secretPath $root.Values.spellbook.name) "capabilities" (list "read" "list")) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/data%s/*" $vaultConf.secretPath $scope.namespacePath) "capabilities" (list "create" "read" "update" "delete" "list")) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/metadata%s/*" $vaultConf.secretPath $scope.namespacePath) "capabilities" (list "create" "read" "update" "delete" "list")) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/data%s/publics/*" $vaultConf.secretPath $scope.chapterPath) "capabilities" $chapterPublicsCapabilities) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/metadata%s/publics/*" $vaultConf.secretPath $scope.chapterPath) "capabilities" $chapterPublicsCapabilities) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/data%s/publics/*" $vaultConf.secretPath $scope.bookPath) "capabilities" $bookPublicsCapabilities) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/metadata%s/publics/*" $vaultConf.secretPath $scope.bookPath) "capabilities" $bookPublicsCapabilities) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/data%s/pipelines/*" $vaultConf.secretPath $scope.bookPath) "capabilities" (list "read" "list")) -}}
+  {{- $paths = append $paths (dict "path" (printf "%s/metadata%s/pipelines/*" $vaultConf.secretPath $scope.bookPath) "capabilities" (list "read" "list")) -}}
   {{- $paths = append $paths (dict "path" "sys/policies/password/*" "capabilities" (list "read" "list")) -}}
 
   {{- if $hasDatabaseCredentials -}}
@@ -255,7 +256,11 @@ Parameters:
     {{- $paths = append $paths (dict "path" $path "capabilities" (list "read")) -}}
   {{- end -}}
   {{- if $managesExternalDatabaseConnections -}}
-    {{- $paths = append $paths (dict "path" (printf "%s/+/+/+/config/*" $databaseCoordinates.base) "capabilities" (list "create" "read" "update" "delete")) -}}
+    {{- $connectionPath := printf "%s/+/+/+/config/*" $databaseCoordinates.base -}}
+    {{- if hasKey $vaultConf "pathRoot" -}}
+      {{- $connectionPath = printf "%s%s/+/+/config/*" $databaseCoordinates.base $scope.bookPath -}}
+    {{- end -}}
+    {{- $paths = append $paths (dict "path" $connectionPath "capabilities" (list "create" "read" "update" "delete")) -}}
   {{- end -}}
   {{- range (default list ($root.Values.spellbook.prolicy).extraPolicy) -}}
     {{- $paths = append $paths . -}}

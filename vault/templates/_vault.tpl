@@ -82,7 +82,7 @@ Examples:
   {{- $basePath := printf "%s%s" $vaultConf.secretPath $pathPrefix }}
 
   {{- /* Call common.secretPath with prepared basePath */ -}}
-  {{- include "common.secretPath" (list $root $glyph $basePath $options) }}
+  {{- include "common.secretPath" (list $root $glyph $basePath (merge (dict "store" $vaultConf) $options (default dict $glyph.pathOptions))) }}
 {{- end }}
 
 

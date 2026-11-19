@@ -1,0 +1,64 @@
+name: repository-ci
+serviceAccount:
+  enabled: true
+  namespace: argo-events
+chapter:
+  name: workflows
+spellbook:
+  name: example
+lexicon:
+  shared-events:
+    type: eventbus
+    name: shared-events
+    namespace: argo-events
+    labels:
+      purpose: ci
+
+glyphs:
+  summon:
+    git-known-hosts:
+      type: configMap
+      definition:
+        namespace: argo-events
+        contentType: env
+        content:
+          ssh_known_hosts: 'git.example.test ssh-ed25519 example-public-key'
+    workflow-submit:
+      type: roleBinding
+      role: workflow-submit
+      serviceAccount: {}
+  argo-events:
+    repository-ci:
+      type: sensor
+      selector:
+        purpose: ci
+      dependencies:
+        - name: push
+          eventSourceName: forgejo
+          eventName: webhook
+      triggers:
+        - name: repository-workflow
+          type: argoWorkflow
+          argoWorkflow:
+            operation: submit
+            source:
+              git:
+                url: ssh://git@git.example.test/owner/repository.git
+                filePath: .argo/workflow.yaml
+                ref: HEAD
+            args:
+              - --parameter=ci-sha=
+            parameters:
+              - src:
+                  dependencyName: push
+                  value: repository-workflows
+                dest: metadata.namespace
+          templateParameters:
+            - src:
+                dependencyName: push
+                dataKey: body.after
+              dest: argoWorkflow.source.git.ref
+            - src:
+                dependencyName: push
+                dataTemplate: '--parameter=ci-sha={{ .Input.body.after }}'
+              dest: argoWorkflow.args.0

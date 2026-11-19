@@ -1,0 +1,56 @@
+# Executable examples: each expectedName is asserted by common.test-helpers.
+# Both dispatchers supply the map key as glyph.name when name is omitted.
+name: workload
+namePrefix: dev-
+nameSuffix: -v1
+
+glyphs:
+  common:
+    explicit:
+      type: test-helpers
+      helper: name
+      glyph: {name: Explicit_Name}
+      expectedName: Explicit_Name
+    affixes:
+      type: test-helpers
+      helper: name
+      glyph: {name: api, namePrefix: prod-, nameSuffix: -internal}
+      options: {prefix: platform-, suffix: -cert}
+      expectedName: platform-prod-api-internal-cert
+    fallback:
+      type: test-helpers
+      helper: name
+      options: {suffix: -cert}
+      expectedName: dev-workload-v1-cert
+    release-fallback:
+      type: test-helpers
+      helper: name
+      values: {}
+      expectedName: test
+    normalized:
+      type: test-helpers
+      helper: name
+      glyph: {name: My_API.Example}
+      options: {normalize: true, suffix: -CERT}
+      expectedName: my-api-example-cert
+    long-name:
+      type: test-helpers
+      helper: name
+      glyph: {name: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+      options: {normalize: true, maxLength: 32, suffix: -cert}
+      expectedName: aaaaaaaaaaaaaaaaaa-5134880e-cert
+    long-explicit:
+      type: test-helpers
+      helper: name
+      glyph: {name: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+      expectedName: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    legacy-fallback:
+      type: test-helpers
+      helper: name
+      values:
+        name: Keep.Name
+        namePrefix: dev-
+        nameSuffix: -v1
+        nameOverride: ignored
+        global: {namePrefix: ignored-, nameSuffix: -ignored}
+      expectedName: dev-keep.name-v1

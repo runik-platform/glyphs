@@ -15,12 +15,13 @@ spellbook:
 lexicon:
   intro-vault:
     type: secret-store
-    provider: operator
     url: http://vault.vault.svc:8200
     namespace: vault
     authPath: the-yaml-life
     secretPath: secret
     labels:
+      # Provider selection also supports labels through runicIndexer.
+      provider: operator
       default: book
 
 glyphs:

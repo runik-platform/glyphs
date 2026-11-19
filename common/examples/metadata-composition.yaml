@@ -1,0 +1,66 @@
+# The new API combines maps before YAML rendering and keeps selectors stable.
+name: common-api
+spellbook: {name: example-book}
+chapter: {name: production}
+component: backend
+description: Default description
+labels:
+  finops: {enabled: true, team: platform}
+  covenant: {enabled: true, member: app}
+  custom: {team: root, revision: "001", root-only: true}
+annotations:
+  owner: platform
+  kubernetes.io/description: Root description
+
+glyphs:
+  common:
+    composition:
+      type: test-helpers
+      helper: metadata
+      labels: {team: local, local-only: 42}
+      generatedLabels: {team: generated}
+      annotations: {owner: service}
+      generatedAnnotations: {checksum/config: abc123}
+      expectedLabels:
+        team: generated
+        revision: "001"
+        root-only: "true"
+        local-only: "42"
+        environment: production
+        covenant.runik.io/member: app
+        app.kubernetes.io/name: common-api
+      expectedAnnotations:
+        kubernetes.io/description: Root description
+        owner: service
+        checksum/config: abc123
+    inherited:
+      type: test-helpers
+      helper: metadata
+      expectedLabels: {team: root}
+      expectedAnnotations:
+        kubernetes.io/description: Root description
+        owner: platform
+    generated-wins:
+      type: test-helpers
+      helper: metadata
+      annotations: {owner: service}
+      generatedAnnotations: {owner: generated, enabled: false, port: 8080}
+      expectedAnnotations:
+        kubernetes.io/description: Root description
+        owner: generated
+        enabled: "false"
+        port: "8080"
+    defaults:
+      type: test-helpers
+      helper: metadata
+      values: {}
+      expectedLabels:
+        app.kubernetes.io/name: test
+        app.kubernetes.io/instance: test
+        app.kubernetes.io/managed-by: Helm
+      expectedAnnotations: {}
+    description:
+      type: test-helpers
+      helper: metadata
+      values: {description: Description fallback}
+      expectedAnnotations: {kubernetes.io/description: Description fallback}

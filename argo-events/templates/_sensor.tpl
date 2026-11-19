@@ -198,46 +198,50 @@ metadata:
   {{- end }}
 spec:
   eventBusName: {{ default $eventBus.name $glyphDefinition.eventBusName }}
-  {{- if $glyphDefinition.template }}
+  {{- $template := default dict $glyphDefinition.template }}
+  {{- $serviceAccount := default dict $root.Values.serviceAccount }}
+  {{- if or $template $serviceAccount.enabled }}
   template:
-    {{- with $glyphDefinition.template.serviceAccountName }}
-    serviceAccountName: {{ . }}
+    {{- if $template.serviceAccountName }}
+    serviceAccountName: {{ $template.serviceAccountName }}
+    {{- else if $serviceAccount.enabled }}
+    serviceAccountName: {{ include "common.serviceAccountName" $root }}
     {{- end }}
-    {{- if $glyphDefinition.template.container }}
+    {{- if $template.container }}
     container:
-      {{- $glyphDefinition.template.container | toYaml | nindent 6 }}
+      {{- $template.container | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.volumes }}
+    {{- with $template.volumes }}
     volumes:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.nodeSelector }}
+    {{- with $template.nodeSelector }}
     nodeSelector:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.tolerations }}
+    {{- with $template.tolerations }}
     tolerations:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.metadata }}
+    {{- with $template.metadata }}
     metadata:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.securityContext }}
+    {{- with $template.securityContext }}
     securityContext:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.affinity }}
+    {{- with $template.affinity }}
     affinity:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
-    {{- with $glyphDefinition.template.priorityClassName }}
+    {{- with $template.priorityClassName }}
     priorityClassName: {{ . }}
     {{- end }}
-    {{- with $glyphDefinition.template.priority }}
+    {{- with $template.priority }}
     priority: {{ . }}
     {{- end }}
-    {{- with $glyphDefinition.template.imagePullSecrets }}
+    {{- with $template.imagePullSecrets }}
     imagePullSecrets:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
@@ -379,6 +383,10 @@ spec:
           {{- with .argoWorkflow.operation }}
           operation: {{ . }}
           {{- end }}
+          {{- with .argoWorkflow.args }}
+          args:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
           {{- if .argoWorkflow.source }}
           source:
             {{- if .argoWorkflow.source.resource }}
@@ -404,7 +412,10 @@ spec:
           {{- end }}
           {{/* Workflow resource paths must be parameterized by the Argo
                Workflow trigger, not by the enclosing TriggerTemplate. */}}
-          {{- if .parameters }}
+          {{- if hasKey .argoWorkflow "parameters" }}
+          parameters:
+            {{- .argoWorkflow.parameters | toYaml | nindent 12 }}
+          {{- else if .parameters }}
           parameters:
             {{- range .parameters }}
             - src:
@@ -560,7 +571,10 @@ spec:
         requestsPerUnit: {{ . }}
         {{- end }}
       {{- end }}
-      {{- if and .parameters (ne .type "argoWorkflow") }}
+      {{- if .templateParameters }}
+      parameters:
+        {{- .templateParameters | toYaml | nindent 8 }}
+      {{- else if and .parameters (ne .type "argoWorkflow") }}
       parameters:
         {{- range .parameters }}
         - src:

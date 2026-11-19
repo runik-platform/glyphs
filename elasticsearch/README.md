@@ -9,9 +9,10 @@ connection CR lives in the ECK namespace, so no Secret is copied. Its endpoint
 uses HTTPS by default. A shared cluster may explicitly set `tls.enabled: false`
 to use HTTP when the Kubernetes network is the accepted transport-security
 boundary. The Elasticsearch plugin receives its endpoint through its native
-`url` setting; the generic `connection_url` field is intentionally omitted
-because this plugin rejects it. Root rotation stays disabled because ECK owns
-the password Secret.
+`url` setting. The CR emits `connectionURL: ""` to satisfy the required field
+in Vault Config Operator 1, while leaving the generic connection URL unset.
+The plugin-specific endpoint and credentials are unchanged. Root rotation
+stays disabled because ECK owns the password Secret.
 
 `tls.enabled` is optional and defaults to `true`. The legacy `scheme` field is
 still accepted; when both are supplied they must agree.

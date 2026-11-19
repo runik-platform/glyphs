@@ -1,0 +1,41 @@
+name: postgres-observability
+spellbook:
+  name: test-book
+chapter:
+  name: databases
+glyphs:
+  postgresql:
+    monitored:
+      type: cluster
+      instances: 3
+      backup:
+        s3SecretRef: external-backup
+        endpointURL: https://s3.example.com
+      dbEngine:
+        enabled: false
+      inheritedMetadata:
+        labels:
+          team: platform
+        annotations:
+          example.com/owner: database-team
+      monitoring:
+        metricsQueriesTTL: 30
+      observability:
+        datasourceUid: prometheus
+        thresholds:
+          slotRetainedWarningRatio: 0.05
+    unmonitored:
+      type: instance
+      observability:
+        enabled: false
+    metrics-only:
+      type: instance
+      observability:
+        dashboard: false
+        alerts: false
+lexicon:
+  s3:
+    type: s3-provider
+    endpoint: https://s3.example.com
+    labels:
+      default: book

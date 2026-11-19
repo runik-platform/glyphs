@@ -14,6 +14,26 @@ lexicon:
     labels:
       default: book
 
+  - name: rooted-vault
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    serviceAccount: vault
+    authPath: k8s-path-auth
+    secretPath: kv
+    pathRoot: acme/prod
+    labels:
+      tenant: acme
+
+  - name: test-oidc
+    type: oidc
+    credentialsSecret: oidc-client
+    discoveryURL: https://identity.example.test/realms/test
+    baseURL: vault.example.test
+    labels:
+      default: book
+
 glyphs:
   vault:
     # Test path: "book" - resolves to $secretPath/data/$spellbook/publics/$name
@@ -51,3 +71,20 @@ glyphs:
       keys:
         - service-key
         - endpoint
+
+    # The policy, random writer and reader share the selected store's root.
+    - type: prolicy
+      nameOverride: rooted-access
+      selector: {tenant: acme}
+    - type: secret
+      name: rooted-token
+      selector: {tenant: acme}
+      random: true
+    - type: secret
+      name: rooted-random-keys
+      selector: {tenant: acme}
+      path: chapter
+      randomKeys: [username, password]
+    - type: oidcAuth
+      name: rooted-oidc
+      selector: {tenant: acme}

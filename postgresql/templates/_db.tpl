@@ -4,7 +4,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 postgresql.db — CONSUMER glyph. Gives an app a database on a shared CNPG
 cluster plus either dynamic credentials (backward-compatible default) or a
-stable username whose password is rotated by Vault.
+stable username whose password is managed by Vault or External Secrets.
+The selected secret-store determines the integration: provider operator uses
+Vault; other providers use ESO, without a Vault manager. ESO applies its
+source Secret through CNPG and supports static credentials only.
 
 Minimal spell:
   postgresql:
@@ -22,22 +25,32 @@ The app's local vault.prolicy owns
 native `creds/*` and `static-creds/*` endpoints, and binds its own Vault auth
 role even when several spells share one Kubernetes ServiceAccount.
 
-credentials.mode defaults to dynamic. Static mode requires rotationPeriod and
-defaults to a basic-auth Secret with lowercase username/password keys.
+credentials.mode defaults to dynamic for Vault and static for ESO. Vault
+static mode requires rotationPeriod. Static output defaults to a basic-auth
+Secret with lowercase username/password keys.
 */}}
 {{- define "postgresql.db" -}}
 {{- $root := index . 0 -}}
 {{- $g := index . 1 -}}
 {{- $appName := default (include "common.name" $root) $g.name -}}
 {{- $credentials := deepCopy (default dict $g.credentials) -}}
-{{- $mode := default "dynamic" $credentials.mode -}}
+{{- $clusterSelector := default $g.cluster $g.clusterSelector -}}
+{{- $pg := include "postgresql.resolveLexicon" (list $root $clusterSelector) | fromJson -}}
+{{- $credentials = mergeOverwrite (deepCopy (default dict $pg.credentials)) $credentials -}}
+{{- $eso := default dict $credentials.externalSecrets -}}
+{{- $storeSelector := default dict (default $g.selector $g.vaultSelector) -}}
+{{- if hasKey $eso "selector" -}}{{- $storeSelector = $eso.selector -}}{{- end -}}
+{{- $secretStore := include "postgresql.resolveSecretStore" (list $root $storeSelector false) | fromJson -}}
+{{- $external := $secretStore.external -}}
+{{- $mode := default (ternary "static" "dynamic" $external) $credentials.mode -}}
+{{- if and $external (ne $mode "static") -}}
+  {{- fail "postgresql.db: external-secrets requires credentials.mode: static" -}}
+{{- end -}}
 {{- if not (has $mode (list "dynamic" "static")) -}}
   {{- fail (printf "postgresql.db: credentials.mode must be dynamic or static, got %q" $mode) -}}
 {{- end -}}
-{{- $clusterSelector := default $g.cluster $g.clusterSelector -}}
-{{- $vaultSelector := default $g.selector $g.vaultSelector -}}
-{{- $pg := include "postgresql.resolveLexicon" (list $root $clusterSelector) | fromJson -}}
-{{- if and (eq $mode "static") (not $pg.managerSuperuser) -}}
+{{- $vaultSelector := $secretStore.selector -}}
+{{- if and (not $external) (eq $mode "static") (not $pg.managerSuperuser) -}}
   {{- fail "postgresql.db: static credentials require the postgres lexicon entry to publish managerSuperuser: true, matching dbEngine.managerSuperuser on the cluster, so Vault can rotate CNPG-created roles" -}}
 {{- end -}}
 {{- $dbName := include "postgresql.identifier" (list "databaseName" (default $appName $g.databaseName)) -}}
@@ -63,17 +76,24 @@ defaults to a basic-auth Secret with lowercase username/password keys.
 {{- $accessShort := ternary "rw" "ro" (eq $access "read-write") -}}
 {{- $legacyVaultRoleName := printf "%s-%s" $dbName $accessShort -}}
 {{- $scopedVaultRoleName := printf "%s-%s-%s" $pg.clusterName $dbName $accessShort -}}
+{{- $vaultRoleName := "" -}}
+{{- $databaseMount := "" -}}
+{{- $vaultConnectionName := "" -}}
+{{- $serviceAccount := "" -}}
+{{- $authRole := "" -}}
+{{- if not $external -}}
 {{- $runikCoordinates := include "vault.databaseCoordinates" (list $root (dict "name" (default $appName $credentials.name) "selector" $vaultSelector) $mode) | fromJson -}}
 {{- $legacyDefaultRoleName := ternary $scopedVaultRoleName $legacyVaultRoleName (eq $mode "static") -}}
-{{- $vaultRoleName := default (ternary $legacyDefaultRoleName $runikCoordinates.name $pg.legacyDatabaseMount) (default $g.vaultRoleName $credentials.vaultRoleName) -}}
-{{- $databaseMount := ternary $pg.databaseMount $runikCoordinates.mount $pg.legacyDatabaseMount -}}
+{{- $vaultRoleName = default (ternary $legacyDefaultRoleName $runikCoordinates.name $pg.legacyDatabaseMount) (default $g.vaultRoleName $credentials.vaultRoleName) -}}
+{{- $databaseMount = ternary $pg.databaseMount $runikCoordinates.mount $pg.legacyDatabaseMount -}}
 {{- $runikConnectionStem := printf "%s-%s" $runikCoordinates.spell $pg.clusterName -}}
 {{- if ne $runikCoordinates.base "db" -}}{{- $runikConnectionStem = printf "%s-%s" $runikConnectionStem $runikCoordinates.base -}}{{- end -}}
 {{- $runikConnectionName := $runikConnectionStem | lower | trunc 63 | trimSuffix "-" -}}
-{{- $vaultConnectionName := ternary $pg.clusterName $runikConnectionName $pg.legacyDatabaseMount -}}
-{{- $serviceAccount := default (default $appName $g.serviceAccount) $credentials.serviceAccount -}}
-{{- $authRole := default $serviceAccount $credentials.authRole -}}
+{{- $vaultConnectionName = ternary $pg.clusterName $runikConnectionName $pg.legacyDatabaseMount -}}
+{{- $serviceAccount = default (default $appName $g.serviceAccount) $credentials.serviceAccount -}}
+{{- $authRole = default $serviceAccount $credentials.authRole -}}
 {{- if not $pg.legacyDatabaseMount -}}{{- $authRole = include "vault.databaseAuthRole" (list $root $serviceAccount $credentials.authRole) -}}{{- end -}}
+{{- end -}}
 {{- $databaseCfg := deepCopy (default dict $g.database) -}}
 {{- $ownerRoleCfg := deepCopy (default dict $g.ownerRole) -}}
 {{- $createDatabase := ne false $databaseCfg.create -}}
@@ -82,8 +102,28 @@ defaults to a basic-auth Secret with lowercase username/password keys.
 {{- $databaseResourceName := default (ternary (include "postgresql.resourceName" (list $pg.clusterName $dbName)) $dbName (eq $mode "static")) $databaseCfg.resourceName -}}
 {{- $ownerRoleResourceName := default (include "postgresql.resourceName" (list $pg.clusterName $owner)) $ownerRoleCfg.resourceName -}}
 
+{{- $sourceName := default $ownerRoleResourceName $credentials.sourceSecretName -}}
+{{- if $external -}}
+{{- $externalCfg := deepCopy $eso -}}
+{{- $_ := set $externalCfg "selector" $secretStore.selector -}}
+{{- if not $externalCfg.remoteKey -}}
+  {{- $_ := set $externalCfg "remoteKey" (printf "%s/%s/%s/postgresql/%s/%s" $root.Values.spellbook.name $root.Values.chapter.name $root.Release.Namespace $pg.clusterName $dbName) -}}
+{{- end -}}
+{{- $_ := set $credentials "externalSecrets" $externalCfg -}}
+{{ include "postgresql.externalCredentials" (list $root (dict
+    "credentials" $credentials
+    "sourceName" $sourceName
+    "namespace" $pg.namespace
+    "username" $username
+    "staticData" (dict "host" $pg.host "port" $pg.port "dbname" $dbName "database" $dbName)
+    "targetName" (default (default (default $appName $g.secretName) $credentials.secretName) $credentials.outputName)
+    "targetNamespace" (default $root.Release.Namespace $credentials.namespace)
+)) }}
+{{- end -}}
+
 {{- /* 1. The stable owner/login exists before Database reconciliation. CNPG
-       owns role existence and attributes; Vault alone owns its password. */ -}}
+       owns role existence and attributes; ESO passwords are read from a Secret,
+       while Vault-managed roles leave their password to Vault. */ -}}
 {{- if $createOwnerRole }}
 ---
 apiVersion: postgresql.cnpg.io/v1
@@ -107,6 +147,10 @@ spec:
   name: {{ $owner }}
   ensure: present
   login: {{ eq $mode "static" }}
+  {{- if $external }}
+  passwordSecret:
+    name: {{ $sourceName }}
+  {{- end }}
   databaseRoleReclaimPolicy: {{ default "retain" $ownerRoleCfg.reclaimPolicy }}
 {{- end }}
 
@@ -137,6 +181,7 @@ spec:
   databaseReclaimPolicy: {{ default "retain" $databaseCfg.reclaimPolicy }}
 {{ end }}
 
+{{- if not $external }}
 {{- /* Canonical Runik scopes use a per-spell mount, so the selected physical
        resource must also be registered as a connection inside that mount. The
        producer owns and publishes the manager Secret; consumers never rotate
@@ -258,4 +303,5 @@ spec:
   {{- with $credentials.refreshThreshold }}{{- $_ := set $secretDefinition "refreshThreshold" . }}{{- end -}}
 {{- end -}}
 {{ include "vault.secret" (list $root $secretDefinition) }}
+{{- end }}
 {{- end -}}

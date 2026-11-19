@@ -4,8 +4,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 postgresql.instance — Renders a single CloudNativePG Cluster CRD.
 
-This is the pure per-CRD glyph: it emits only the Cluster resource (and the
-optional postInit ConfigMaps that the Cluster spec references). It does NOT
+This per-CRD glyph emits the Cluster, standard observability ConfigMaps, and
+optional postInit ConfigMaps. It does NOT
 provision any S3 bucket, does NOT create a ScheduledBackup. Use the meta
 `type: cluster` for a full PG instance with backups and conventions, or call
 `type: instance` directly when you want the raw CRD with no orchestration.
@@ -33,6 +33,7 @@ restore: {} fields:
 {{- define "postgresql.instance" }}
 {{- $root := index . 0 -}}
 {{- $glyphDefinition := index . 1 -}}
+{{- $observability := include "postgresql.observability.config" . | fromJson -}}
 {{- $enableSuperuserAccess := true -}}
 {{- if hasKey $glyphDefinition "enableSuperuserAccess" -}}
   {{- $enableSuperuserAccess = $glyphDefinition.enableSuperuserAccess -}}
@@ -58,11 +59,30 @@ metadata:
 spec:
   description: {{ default (print "PostgreSQL cluster for " (default (include "common.name" $root ) $glyphDefinition.name)) $glyphDefinition.description }}
 
+  {{- $inherited := deepCopy (default dict $glyphDefinition.inheritedMetadata) -}}
+  {{- if $observability.enabled -}}
+    {{- $annotations := mergeOverwrite (default dict $inherited.annotations) (dict "prometheus.io/scrape" "true" "prometheus.io/port" "9187" "prometheus.io/path" "/metrics") -}}
+    {{- $_ := set $inherited "annotations" $annotations -}}
+  {{- end }}
+  {{- with $inherited }}
+  inheritedMetadata:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $glyphDefinition.monitoring }}
+  monitoring:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
   {{- with $glyphDefinition.image }}
   imageName: {{ include "summon.getImage" (list $root $glyphDefinition) }}
   {{- end}}
 
   instances: {{ default 1 $glyphDefinition.instances }}
+
+  {{- with $glyphDefinition.podSecurityContext }}
+  podSecurityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 
   {{- with $glyphDefinition.minSyncReplicas }}
   minSyncReplicas: {{ . }}
@@ -212,6 +232,7 @@ spec:
 {{- $defaultValues := dict "name" $cmName "definition" (dict "content" .content "contentType" "file") }}
 {{- include "summon.configMap" ( list $root $defaultValues ) }}
 {{- end}}
+
 {{- end}}
 
 {{/* Create ConfigMaps for postInitApp if needed */}}
@@ -223,4 +244,5 @@ spec:
 {{- end}}
 {{- end}}
 
+{{ include "postgresql.observability" (list $root $glyphDefinition) }}
 {{- end}}

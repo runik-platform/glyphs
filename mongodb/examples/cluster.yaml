@@ -20,13 +20,14 @@ lexicon:
 
   s3:
     type: s3-provider
-    name: seaweedfs
-    namespace: seaweedfs
+    provider: versity
+    name: gateway
+    namespace: s3
     endpoint: https://s3.example.test
-    internalEndpoint: http://seaweedfs-s3.seaweedfs.svc:8333
+    internalEndpoint: http://s3.s3.svc:7070
     region: us-east-1
-    serviceAccount: seaweedfs
-    role: seaweedfs
+    serviceAccount: gateway-s3-aggregator-pod
+    role: gateway-s3-identities
     labels:
       default: book
 

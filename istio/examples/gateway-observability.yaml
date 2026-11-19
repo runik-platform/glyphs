@@ -1,0 +1,67 @@
+spellbook:
+  name: example
+chapter:
+  name: gateways
+glyphs:
+  istio:
+    public-observability:
+      type: gatewayObservability
+      selector:
+        access: external
+      accessLogs:
+        provider: gateway-errors-json
+      dashboard:
+        metricsDatasourceUid: mimir
+        logsDatasourceUid: loki
+    private-observability:
+      type: gatewayObservability
+      selector:
+        access: internal
+      accessLogs:
+        provider: custom-json
+        filter: response.code >= 500
+      tracing:
+      - providers:
+        - name: tracing
+        randomSamplingPercentage: 100
+      dashboard:
+        uid: private-errors
+        title: Private gateway
+        metricsDatasourceUid: metrics_other
+        logsDatasourceUid: logs_other
+    telemetry-only:
+      type: gatewayObservability
+      accessLogs:
+        provider: gateway-errors-json
+      dashboard:
+        enabled: false
+      target:
+        namespace: custom-ingress
+        workloadSelector:
+          istio: no-dashboard
+    disabled:
+      type: gatewayObservability
+      enabled: false
+lexicon:
+  public:
+    type: istio-gw
+    gateway: public-ingress/public
+    workloadSelector:
+      istio: public
+    labels:
+      access: external
+      default: book
+  public-alias:
+    type: istio-gw
+    gateway: public-ingress/second-domain
+    workloadSelector:
+      istio: public
+    labels:
+      access: external
+  private:
+    type: istio-gw
+    gateway: private-ingress/private
+    workloadSelector:
+      istio: private
+    labels:
+      access: internal

@@ -6,7 +6,7 @@ S3 Glyph - Seamless S3 integration with automatic credential management
 
 Supports two types:
 1. bucket: For apps consuming S3 storage
-2. seaweed: For SeaweedFS infrastructure setup
+2. versity: For VersityGW infrastructure setup
 
 Usage in app spell:
 glyphs:
@@ -19,18 +19,18 @@ glyphs:
       # public: true  # anonymous GET (public-read ACL); default false = private. versity backend only.
       # pattern: true  # adds -* suffix: {bucket}-*
       # pattern: ["prefix-*", "*-suffix", "custom"]  # custom bucket patterns
-      # selector: {provider: seaweedfs}  # default: {default: book}
+      # selector: {provider: versity}  # default: {default: book}
 
 App consumes via:
 secrets:
   my-data:
     contentType: env
 
-Usage in seaweedfs spell:
+Usage in VersityGW spell:
 glyphs:
   s3:
-    seaweedfs:
-      type: seaweed
+    gateway:
+      type: versity
       # Automatically creates:
       # - EventSource (watching secrets)
       # - Sensor (triggering aggregator)
@@ -44,9 +44,3 @@ glyphs:
 {{- $glyphDefinition := index . 1 -}}
 {{ include "s3.bucket.impl" (list $root $glyphDefinition) }}
 {{ end -}}
-
-{{- define "s3.seaweed" -}}
-{{- $root := index . 0 -}}
-{{- $glyphDefinition := index . 1 -}}
-{{ include "s3.seaweed.impl" (list $root $glyphDefinition) }}
-{{- end -}}

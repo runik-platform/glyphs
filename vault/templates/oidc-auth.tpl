@@ -151,7 +151,7 @@ metadata:
 spec:
   {{- include "vault.connect" (list $root $vaultConf "vault" $glyphDefinition.serviceAccount) | nindent 2 }}
   policy: |
-    path "secret/data/{{ $root.Values.spellbook.name }}/publics/*" {
+    path "{{ if hasKey $vaultConf "pathRoot" }}{{ include "vault.secretPath" (list $root (dict "name" "*" "path" "book") $vaultConf dict) }}{{ else }}secret/data/{{ $root.Values.spellbook.name }}/publics/*{{ end }}" {
       capabilities = [ "read", "list"]
     }
     path "secret/data/develop/**/publics/*" {

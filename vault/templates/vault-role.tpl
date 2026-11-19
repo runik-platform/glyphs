@@ -40,6 +40,9 @@ metadata:
 spec:
   {{- include "vault.connect" (list $root $vaultConf "True") | nindent 2 }}
   path: {{ default $root.Values.spellbook.name $vaultConf.path }}
+  {{- with $glyph.audience }}
+  audience: {{ . | quote }}
+  {{- end }}
   policies:
   {{- range $policy := $policies }}
     - {{ $policy }}

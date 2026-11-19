@@ -4,6 +4,15 @@ SPDX-License-Identifier: AGPL-3.0-only
  */}}
 {{- define "summon.autoscaling" }}
 {{- $root := . }}
+{{- if $root.Values.autoscaling.enabled }}
+{{- $mode := "hpa" }}
+{{- if and (hasKey $root.Values.autoscaling "mode") (ne $root.Values.autoscaling.mode nil) }}
+{{- $mode = $root.Values.autoscaling.mode }}
+{{- end }}
+{{- if not (has $mode (list "hpa" "external")) }}
+{{- fail (printf "unsupported autoscaling.mode %q: expected hpa or external" $mode) }}
+{{- end }}
+{{- if eq $mode "hpa" }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -43,4 +52,6 @@ spec:
           type: Utilization
           averageUtilization: {{ $root.Values.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
+{{- end -}}
+{{- end -}}
 {{- end -}}

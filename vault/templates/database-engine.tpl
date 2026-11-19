@@ -67,7 +67,7 @@ password rotation flow.
 {{- /* The caller resolves either the canonical per-spell mount or an explicit
        legacy mount. This glyph only registers a connection inside it. */ -}}
 {{- $mount := default "database" $g.databaseMount -}}
-{{- $ns := default $vaultConf.namespace $g.configNamespace -}}
+{{- $ns := default $vaultConf.namespace $g.configNamespace }}
 ---
 apiVersion: redhatcop.redhat.io/v1alpha1
 kind: DatabaseSecretEngineConfig
@@ -102,6 +102,8 @@ spec:
   {{- if not $g.databaseSpecificConfig }}
   {{- fail "vault.databaseEngine: omitConnectionURL requires databaseSpecificConfig" }}
   {{- end }}
+  # VCO 1 requires this field; plugins using databaseSpecificConfig keep it empty.
+  connectionURL: ""
   {{- else }}
   connectionURL: {{ if $g.connectionURL }}{{ $g.connectionURL }}{{ else }}{{ required "vault.databaseEngine: connectionPrefix is required" $g.connectionPrefix }}{{`{{username}}`}}:{{`{{password}}`}}{{ required "vault.databaseEngine: connectionSuffix is required" $g.connectionSuffix }}{{ end }}
   {{- end }}

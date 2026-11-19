@@ -21,12 +21,12 @@ lexicon:
     labels:
       default: book
   - type: s3-provider
-    provider: seaweedfs
-    name: seaweedfs
-    namespace: seaweedfs
-    serviceAccount: seaweedfs-s3-aggregator-pod
-    role: seaweedfs-s3-identities
-    endpoint: https://s3-weed.the.yaml.life
+    provider: versity
+    name: gateway
+    namespace: s3
+    serviceAccount: gateway-s3-aggregator-pod
+    role: gateway-s3-identities
+    endpoint: https://s3.example.test
     region: us-east-1
     vault:
       path: /s3-identities

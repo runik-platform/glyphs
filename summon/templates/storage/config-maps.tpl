@@ -10,6 +10,7 @@ Parameters:
 - $glyphDefinition: ConfigMap configuration with structure:
   - name: ConfigMap name
   - definition: Configuration object with content
+    - namespace: Optional namespace override; omit for the release destination
 
 Usage: {{- include "summon.configMap" (list $root $glyph) }}
 */}}
@@ -22,6 +23,9 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: {{ $resourceName }}
+  {{- with $glyphDefinition.definition.namespace }}
+  namespace: {{ . }}
+  {{- end }}
   labels:
     {{- include "common.all.labels" $root | nindent 4 }}
     {{- with $glyphDefinition.definition.labels }}
@@ -63,5 +67,6 @@ data:
     {{- end }}
   {{- end }}
   {{- end }}
+{{ "\n" }}
 {{- end }}
 

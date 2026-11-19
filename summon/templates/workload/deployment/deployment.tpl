@@ -21,7 +21,7 @@ metadata:
   {{- end }}
 spec:
   {{- if not $root.Values.autoscaling.enabled }}
-  replicas: {{ default 1 $root.Values.workload.replicas }}
+  replicas: {{ if hasKey $root.Values.workload "replicas" }}{{ $root.Values.workload.replicas }}{{ else }}1{{ end }}
   {{- end }}
   {{- with $root.Values.workload.strategy }}
   strategy:

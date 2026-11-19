@@ -8,6 +8,8 @@ Follows standard glyph parameter pattern: (list $root $glyphDefinition).
 Parameters:
 - $root: Chart root context (index . 0)
 - $glyphDefinition: Secret configuration object (index . 1)
+- Optional index . 2: CR metadata name only (internal callers). Credential
+  source names, RandomSecrets and output names still use the definition.
 
 Generation Types:
 - generationType: "kv" (default) - KV v2 secrets, uses /data/ prefix
@@ -77,6 +79,8 @@ glyphs:
 {{- define "vault.secret" -}}
 {{- $root := index . 0 -}}
 {{- $glyphDefinition := index . 1 }}
+{{- $resourceName := $glyphDefinition.name }}
+{{- if gt (len .) 2 }}{{- $resourceName = index . 2 }}{{- end }}
 {{- $vaultServer := get (include "runic-system.runic-indexer" (list $root.Values.lexicon (merge (default dict $glyphDefinition.selector) (dict "provider" "operator")) "secret-store" $root.Values.chapter.name ) | fromJson) "results" }}
 {{- range $vaultConf := $vaultServer }}
 {{- if ne false $glyphDefinition.random }}
@@ -92,7 +96,7 @@ glyphs:
 apiVersion: redhatcop.redhat.io/v1alpha1
 kind: VaultSecret
 metadata:
-  name: {{ $glyphDefinition.name }}
+  name: {{ $resourceName }}
   {{- if $glyphDefinition.namespace }}
   namespace: {{ $glyphDefinition.namespace }}
   {{- end }}
@@ -121,7 +125,7 @@ spec:
     {{- range $keyName := $glyphDefinition.randomKeys }}
     - name: {{ $keyName | lower | replace "_" "-" }}
       requestType: GET
-      path: {{ include "generateSecretPath" (list $root (dict "name" (printf "%s-%s" $glyphDefinition.name ($keyName | lower | replace "_" "-")) "path" $glyphDefinition.path) $vaultConf "") }}
+      path: {{ include "generateSecretPath" (list $root (dict "name" (printf "%s-%s" $glyphDefinition.name ($keyName | lower | replace "_" "-")) "path" $glyphDefinition.path "pathOptions" $glyphDefinition.pathOptions) $vaultConf "") }}
       {{- if $glyphDefinition.customRole }}
       {{- include "vault.connect" (list $root $vaultConf "" (default "" $glyphDefinition.serviceAccount) $glyphDefinition.customRole) | nindent 6 }}
       {{- else }}

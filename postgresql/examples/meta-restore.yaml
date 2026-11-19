@@ -18,18 +18,18 @@ lexicon:
     secretPath: kv
     labels:
       default: book
-  seaweedfs-s3-provider:
+  versity-s3-provider:
       type: s3-provider
-      name: seaweedfs
-      namespace: seaweedfs
-      serviceAccount: seaweedfs-s3-aggregator-pod
-      role: seaweedfs-s3-identities
-      endpoint: s3.int.the.yaml.life
-      internalEndpoint: http://seaweedfs-s3.seaweedfs.svc:8333
+      name: gateway
+      namespace: s3
+      serviceAccount: gateway-s3-aggregator-pod
+      role: gateway-s3-identities
+      endpoint: https://s3.example.test
+      internalEndpoint: http://s3.s3.svc:7070
       region: us-east-1
       vault:
         path: /s3-identities
-      provider: seaweedfs
+      provider: versity
       labels:
         default: book
 

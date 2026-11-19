@@ -1,0 +1,31 @@
+# Both the Vault auth role and WorkflowTemplate must remain separate documents.
+spellbook:
+  name: example
+chapter:
+  name: workflows
+lexicon:
+  vault:
+    type: secret-store
+    provider: operator
+    url: http://vault.vault.svc:8200
+    namespace: vault
+    serviceAccount: vault
+    authPath: kubernetes
+    secretPath: secret
+    labels:
+      default: book
+glyphs:
+  vault:
+    prolicy:
+      type: prolicy
+  workflow:
+    repository-workflows:
+      type: template
+      spec:
+        entrypoint: discover
+        templates:
+          - name: discover
+            container:
+              image: alpine:3.22
+              command: [echo]
+              args: [discover]

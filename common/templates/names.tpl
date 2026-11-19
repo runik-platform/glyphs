@@ -8,15 +8,11 @@ This is common practice in many Kubernetes manifests, and is not Helm-specific.
 The prevailing wisdom is that names should only contain a-z, 0-9 plus dot (.) and dash (-), and should
 not exceed 63 characters.
 
-Parameters:
-
-- .Values.nameOverride: Replaces the computed name with this given name
-- .Values.namePrefix: Prefix
-- .Values.global.namePrefix: Global prefix
-- .Values.nameSuffix: Suffix
-- .Values.global.nameSuffix: Global suffix
-
-The applied order is: "global prefix + prefix + name + suffix + global suffix"
+Legacy workload identity: Values.name (or Release.Name), with the local
+Values.namePrefix and Values.nameSuffix, lowercased and truncated to 54
+characters. nameOverride and global prefixes/suffixes are not supported.
+Keep this behavior stable for existing names and selectors. For glyph names
+and resource-specific affixes, use common.glyph.name.
 
 Usage: 'name: "{{- template "common.name" . -}}"'
 */ -}}
@@ -30,7 +26,8 @@ Usage: 'name: "{{- template "common.name" . -}}"'
 
 
 {{- define "common.serviceAccountName" -}}
-{{ print ( default (include "common.name" . ) .Values.serviceAccount.name ) }}
+{{- $serviceAccount := default dict .Values.serviceAccount -}}
+{{- default (include "common.name" .) $serviceAccount.name -}}
 {{- end -}}
 
 {{/*

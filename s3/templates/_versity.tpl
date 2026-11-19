@@ -21,7 +21,7 @@ with busybox wget trusting the cluster CA via SSL_CERT_FILE (busybox wget has no
 --ca-certificate), and parses with grep/sed (no jq). Pre-existing bucket data must
 be chowned to the gateway uid once, out of band (a migration step).
 
-Unlike seaweed there is NO restart: versity reads its IAM from Vault on demand;
+No restart is needed: versity reads its IAM from Vault on demand;
 create-user writes the record straight into the Vault iam/ tree.
 
 Usage (infra spell — e.g. bookrack/the-yaml-life/intro/s3.yaml):
@@ -33,6 +33,7 @@ Usage (infra spell — e.g. bookrack/the-yaml-life/intro/s3.yaml):
         # bucketsHostPath: /var/mnt/cargo-hold    # the RAID; gateway root is /buckets under it
         # rootSecret: s3-root                     # ROOT_ACCESS_KEY/ROOT_SECRET_KEY
         # runAsUser/runAsGroup: 1042/1069         # the gateway uid
+        # reconcile: false                        # retire triggers/scripts; keep credential readers
 */}}
 
 {{- define "s3.versity" -}}
@@ -57,6 +58,7 @@ Usage (infra spell — e.g. bookrack/the-yaml-life/intro/s3.yaml):
    clobbered. */}}
 {{ include "s3.identityAggregator" (list $root (dict
   "name" $name
+  "reconcile" $g.reconcile
   "backend" "versity"
   "script" (include "s3.versity.aggregatorScript" (list $root $g))
   "extraScripts" (dict "acl.sh" (include "s3.versity.aclScript" (list $root $g)))
@@ -96,6 +98,8 @@ Usage (infra spell — e.g. bookrack/the-yaml-life/intro/s3.yaml):
   "securityContext" (dict "runAsUser" (default 1042 $g.runAsUser) "runAsGroup" (default 1069 $g.runAsGroup))
   "podRbacRules" (list (dict "apiGroups" (list "") "resources" (list "secrets") "verbs" (list "get" "list")))
   "trigger" (default dict $g.trigger)
+  "eventSourceTemplate" (default dict $g.eventSourceTemplate)
+  "sensorTemplate" (default dict $g.sensorTemplate)
 )) }}
 {{- end -}}
 

@@ -51,16 +51,33 @@ adds two new top-level fields:
 {{- /* Resolve cluster name (same logic instance uses for metadata.name) */ -}}
 {{- $clusterName := default (include "common.name" $root) $glyphDefinition.name -}}
 
-{{- /* Vault DB engine — ON BY DEFAULT, gated by Vault being present in the
-       lexicon. If there is no `type: secret-store` entry, nothing Vault-related
+{{- /* The selected secret-store determines the credential integration. An
+       operator store enables the Vault DB engine by default; other providers
+       use ESO. Without a selected store, nothing credential-related
        is emitted and the cluster works exactly as before (everything still
-       renders without Vault). Opt out explicitly with `dbEngine: {enabled: false}`.
+       renders without Vault). Disable only the Vault engine with
+       `dbEngine: {enabled: false}`.
        When on, the cluster emits its superuser secret (unless
        dbEngine.credentialsSecret points at an existing one) and registers a
        Vault database engine via the GENERIC vault.databaseEngine glyph. */ -}}
 {{- $dbEngineCfg := default dict $glyphDefinition.dbEngine -}}
-{{- $vaultServers := get (include "runic-system.runic-indexer" (list $root.Values.lexicon (merge (default dict $dbEngineCfg.selector) (dict "provider" "operator")) "secret-store" $root.Values.chapter.name) | fromJson) "results" -}}
-{{- $vaultPresent := gt (len $vaultServers) 0 -}}
+{{- $credentials := default dict $glyphDefinition.credentials -}}
+{{- $storeSelector := default dict $dbEngineCfg.selector -}}
+{{- $esoCfg := default dict $credentials.externalSecrets -}}
+{{- if hasKey $esoCfg "selector" -}}{{- $storeSelector = $esoCfg.selector -}}{{- end -}}
+{{- $secretStore := include "postgresql.resolveSecretStore" (list $root $storeSelector true) | fromJson -}}
+{{- $external := $secretStore.external -}}
+{{- if and $external (eq true $dbEngineCfg.enabled) -}}
+  {{- fail "postgresql.cluster: selected ESO secret-store cannot enable the Vault dbEngine" -}}
+{{- end -}}
+{{- $vaultServers := list -}}
+{{- $vaultPresent := and $secretStore.found (not $external) -}}
+{{- if $vaultPresent -}}
+  {{- $vaultServers = list $secretStore.store -}}
+  {{- /* Keep downstream Vault resources bound to this selected registration. */ -}}
+  {{- $dbEngineCfg = deepCopy $dbEngineCfg -}}
+  {{- $_ := set $dbEngineCfg "selector" $secretStore.selector -}}
+{{- end -}}
 {{- $engineEnabled := and $vaultPresent (ne false $dbEngineCfg.enabled) -}}
 {{- $engineMount := default "database" $dbEngineCfg.databaseMount -}}
 {{- $superuserSecretName := default (printf "%s-superuser" $clusterName) (default $glyphDefinition.superuserSecret $dbEngineCfg.credentialsSecret) -}}
@@ -123,7 +140,7 @@ adds two new top-level fields:
 {{- end -}}
 
 {{- /* Look up s3 provider via lexicon (needed for backup and for restore.from endpoint default) */ -}}
-{{- $needLexicon := or $backupEnabled (and $restoreIn $restoreIn.from (not $restoreIn.endpointURL)) -}}
+{{- $needLexicon := or (and $backupEnabled (or (not $backupIn.endpointURL) (not $backupIn.s3SecretRef))) (and $restoreIn $restoreIn.from (not $restoreIn.endpointURL)) -}}
 {{- $s3Provider := dict -}}
 {{- if $needLexicon -}}
   {{- $selector := default (dict "default" "book") $backupIn.selector -}}
@@ -197,6 +214,60 @@ adds two new top-level fields:
 
 {{- /* 1. Cluster CRD via instance (with backup and restore blocks injected) */ -}}
 {{- $instanceDef := deepCopy $glyphDefinition -}}
+{{- if $external -}}
+{{- if and $credentials.mode (ne $credentials.mode "static") -}}
+  {{- fail "postgresql.cluster: external-secrets requires credentials.mode: static" -}}
+{{- end -}}
+{{- $eso := deepCopy $esoCfg -}}
+{{- $_ := set $eso "selector" $secretStore.selector -}}
+{{- $remoteBase := default (printf "%s/%s/%s/postgresql/%s" $root.Values.spellbook.name $root.Values.chapter.name $root.Release.Namespace $clusterName) $eso.remoteKey -}}
+{{- $appSecret := default (default (printf "%s-app" $clusterName) $glyphDefinition.secret) $credentials.secretName -}}
+{{- $appUser := default (default "app" $glyphDefinition.userName) $credentials.username -}}
+{{- $database := default "app" $glyphDefinition.dbName -}}
+{{- $host := printf "%s-rw.%s.svc" $clusterName $root.Release.Namespace -}}
+{{- /* Recovery restores roles and databases; reconcile the app password there
+       too, without replacing bootstrap.recovery with bootstrap.initdb. */ -}}
+{{- $roles := deepCopy (default list $glyphDefinition.roles) -}}
+{{- range $roles -}}
+  {{- if eq .name $appUser -}}
+    {{- fail "postgresql.cluster: credentials.username must not duplicate an entry in roles" -}}
+  {{- end -}}
+{{- end -}}
+{{- $_ := set $instanceDef "roles" (append $roles (dict "name" $appUser "ensure" "present" "login" true "passwordSecret" (dict "name" $appSecret))) -}}
+{{- $_ := set $instanceDef "secret" $appSecret -}}
+{{- $_ := set $instanceDef "userName" $appUser -}}
+{{- $_ := set $instanceDef "dbName" $database -}}
+{{- $appCredentials := deepCopy $credentials -}}
+{{- $_ := set $eso "remoteKey" (printf "%s/app" $remoteBase) -}}
+{{- $_ := set $appCredentials "externalSecrets" $eso -}}
+{{ include "postgresql.externalCredentials" (list $root (dict
+    "credentials" $appCredentials
+    "sourceName" $appSecret
+    "namespace" $root.Release.Namespace
+    "username" $appUser
+    "staticData" (dict "host" $host "port" "5432" "dbname" $database "database" $database)
+)) }}
+{{- $superuserEnabled := true -}}
+{{- if hasKey $glyphDefinition "enableSuperuserAccess" -}}
+  {{- $superuserEnabled = $glyphDefinition.enableSuperuserAccess -}}
+{{- else if hasKey (default dict $glyphDefinition.superuser) "enabled" -}}
+  {{- $superuserEnabled = $glyphDefinition.superuser.enabled -}}
+{{- end -}}
+{{- if $superuserEnabled -}}
+{{- $_ := set $instanceDef "superuserSecret" $superuserSecretName -}}
+{{- $suCredentials := deepCopy $credentials -}}
+{{- $suEso := deepCopy $eso -}}
+{{- $_ := set $suEso "remoteKey" (printf "%s/superuser" $remoteBase) -}}
+{{- $_ := set $suCredentials "externalSecrets" $suEso -}}
+{{ include "postgresql.externalCredentials" (list $root (dict
+    "credentials" $suCredentials
+    "sourceName" $superuserSecretName
+    "namespace" $root.Release.Namespace
+    "username" "postgres"
+    "staticData" (dict "host" $host "port" "5432" "dbname" "postgres" "database" "postgres")
+)) }}
+{{- end -}}
+{{- end -}}
 {{- if $engineEnabled -}}
   {{- $_ := set $instanceDef "superuserSecret" $superuserSecretName -}}
   {{- /* CNPG creates vault_mgr with an initial password from its secret; Vault
@@ -249,6 +320,7 @@ adds two new top-level fields:
     "name" $superuserSecretName
     "secretType" "kubernetes.io/basic-auth"
     "staticData" (dict "username" "postgres")
+    "selector" $secretStore.selector
     "random" true -}}
 {{- with $dbEngineCfg.superuserRefresh }}{{- $_ := set $superuserDef "refreshPeriod" . }}{{- end }}
 {{ include "vault.secret" (list $root $superuserDef) }}
@@ -258,12 +330,14 @@ adds two new top-level fields:
        After bootstrap Vault rotates vault_mgr and owns the password. */ -}}
 {{ include "vault.secret" (list $root (dict
     "name" $mgrSecret
+    "selector" $secretStore.selector
     "secretType" "kubernetes.io/basic-auth"
     "staticData" (dict "username" $mgrUser)
     "random" true
 )) }}
 {{ include "vault.secret" (list $root (dict
     "name" $mgrRootSecret
+    "selector" $secretStore.selector
     "sourceName" $mgrSecret
     "namespace" $configNamespace
     "serviceAccount" "vault"

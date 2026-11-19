@@ -3,7 +3,7 @@
 
 # Default S3 provider selector (uses runicIndexer with default: book fallback)
 # selector:
-#   provider: seaweedfs
+#   provider: versity
 
 # Default permissions for bucket access
 # permissions:

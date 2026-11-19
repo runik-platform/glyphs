@@ -1,0 +1,69 @@
+spellbook:
+  name: example
+chapter:
+  name: gateways
+lexicon:
+  internal:
+    type: istio-gw
+    gateway: internal-ingress/lan
+    workloadSelector: {istio: internal}
+    labels: {access: internal, default: book}
+  internal-alias:
+    type: istio-gw
+    gateway: internal-ingress/another-domain
+    workloadSelector: {istio: internal}
+    labels: {access: internal}
+  remote:
+    type: istio-gw
+    gateway: remote-ingress/netbird
+    workloadSelector: {istio: netbird}
+    labels: {access: internal}
+glyphs:
+  istio:
+    # No selector: Runic Indexer resolves the book default.
+    default-gateway:
+      type: telemetry
+      tracing:
+        - providers: [{name: otel}]
+          randomSamplingPercentage: 10
+    # Different proxy deployments get separate Telemetry resources; aliases
+    # pointing to the same proxy are coalesced. Do not deploy this example's
+    # overlapping default-gateway and all-internal policies together.
+    all-internal:
+      type: telemetry
+      selector: {access: internal}
+      accessLogging:
+        - providers: [{name: envoy}]
+          filter: {expression: 'response.code >= 500'}
+    application:
+      type: telemetry
+      target:
+        namespace: apps
+        workloadSelector: {app: backend}
+      tracing:
+        - providers: [{name: otel}]
+          randomSamplingPercentage: 25
+      metrics:
+        - providers: [{name: prometheus}]
+          overrides:
+            - match: {metric: REQUEST_COUNT}
+              tagOverrides:
+                response_code: {operation: REMOVE}
+    waypoint:
+      type: telemetry
+      target:
+        namespace: apps
+        targetRefs:
+          - group: ''
+            kind: Service
+            name: backend
+      accessLogging:
+        - providers: [{name: envoy}]
+    namespace-defaults:
+      type: telemetry
+      target: {namespace: apps, scope: namespace}
+      accessLogging:
+        - disabled: true
+    disabled:
+      type: telemetry
+      enabled: false

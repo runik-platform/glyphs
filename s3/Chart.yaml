@@ -8,7 +8,7 @@ keywords:
   - s3
   - storage
   - vault
-  - seaweedfs
+  - versity
 annotations:
   artifacthub.io/license: AGPL-3.0-only
 maintainers:

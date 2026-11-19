@@ -7,7 +7,7 @@ chapter:
   name: databases
 
 # Lexicon entry that the meta `type: cluster` needs to locate the S3
-# provider. In production this is supplied by the seaweedfs spell;
+# provider. In production this is supplied by the VersityGW spell;
 # here we inline it so the snapshot is self-contained.
 lexicon:
   vault:
@@ -21,22 +21,22 @@ lexicon:
     secretPath: kv
     labels:
       default: book
-  seaweedfs-s3-provider:
+  versity-s3-provider:
       type: s3-provider
-      name: seaweedfs
-      namespace: seaweedfs
-      serviceAccount: seaweedfs-s3-aggregator-pod
-      role: seaweedfs-s3-identities
-      endpoint: s3.int.the.yaml.life
-      internalEndpoint: http://seaweedfs-s3.seaweedfs.svc:8333
+      name: gateway
+      namespace: s3
+      serviceAccount: gateway-s3-aggregator-pod
+      role: gateway-s3-identities
+      endpoint: https://s3.example.test
+      internalEndpoint: http://s3.s3.svc:7070
       region: us-east-1
       vault:
         path: /s3-identities
-      provider: seaweedfs
+      provider: versity
       labels:
         default: book
       # Note: in a real bookrack this lexicon entry comes from the
-      # seaweedfs spell's appendix.lexicon and gets merged in by librarian.
+      # VersityGW spell's appendix.lexicon and gets merged in by librarian.
       # For this standalone glyph render we inline it at the top level
       # (kaster sees $root.Values.lexicon directly).
 
@@ -46,12 +46,20 @@ glyphs:
   postgresql:
     hildy:
       type: cluster
-      description: PostgreSQL with auto-backups to seaweedfs
+      description: PostgreSQL with auto-backups to VersityGW
       # Opt out of the (default-on) Vault DB engine to keep this example focused
       # on backups (vault IS in this lexicon, so it would be on otherwise).
       dbEngine:
         enabled: false
       instances: 2
+      podSecurityContext:
+        runAsUser: 26
+        runAsGroup: 26
+        runAsNonRoot: true
+        fsGroup: 26
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
       dbName: hildy
       userName: hildy
       secret: hildy-pg-app

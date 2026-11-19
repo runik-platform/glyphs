@@ -41,17 +41,19 @@ Physical credential paths:
 {{- end -}}
 {{- $vaultConf := index $vaultServers 0 -}}
 {{- $book := include "vault.databasePathSegment" (list "spellbook.name" $root.Values.spellbook.name) -}}
+{{- $scope := include "common.secretScope" (list $root $vaultConf) | fromJson -}}
 {{- $chapter := include "vault.databasePathSegment" (list "chapter.name" $root.Values.chapter.name) -}}
 {{- $spell := include "vault.databasePathSegment" (list "spell" (default (include "common.name" $root) $definition.spellName)) -}}
 {{- $name := include "vault.databasePathSegment" (list "credential name" (default (include "common.name" $root) $definition.name)) -}}
 {{- $base := include "vault.databasePathSegment" (list "secret-store.databasePath" (default "db" $vaultConf.databasePath)) -}}
-{{- $mountParent := printf "%s/%s/%s" $base $book $chapter -}}
+{{- $mountParent := printf "%s%s" $base $scope.chapterPath -}}
 {{- $mount := printf "%s/%s" $mountParent $spell -}}
 {{- $endpoint := ternary "static-creds" "creds" (eq $mode "static") -}}
 {{- dict
       "base" $base
       "store" $vaultConf.name
       "book" $book
+      "root" $scope.root
       "chapter" $chapter
       "spell" $spell
       "name" $name

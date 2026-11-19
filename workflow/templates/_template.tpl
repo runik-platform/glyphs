@@ -22,7 +22,7 @@ Parameters (index . 1):
 {{- end -}}
 {{- if not $definition.spec -}}
   {{- fail (printf "workflow.template '%s' requires spec" $definition.name) -}}
-{{- end -}}
+{{- end }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: {{ ternary "ClusterWorkflowTemplate" "WorkflowTemplate" (default false $definition.clusterScope) }}

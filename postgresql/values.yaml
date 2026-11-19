@@ -1,1 +1,35 @@
+# Per-cluster observability is enabled by default for both type: cluster and
+# type: instance. Set these fields on the PostgreSQL glyph entry to override:
+# observability:
+#   enabled: true
+#   dashboard: true
+#   alerts: true
+#   datasourceUid: mimir
+#   folder: PostgreSQL
+#   thresholds:
+#     slotRetainedWarningRatio: 0.10
+#     slotRetainedCriticalRatio: 0.20
+#     replicationLagSeconds: 120
+#     diskWarningRatio: 0.80
+#     diskCriticalRatio: 0.90
+#     connectionsWarningRatio: 0.80
+#     archiveStalledSeconds: 900
+#
+# The collector must retain namespace, pod, cnpg_cluster and role labels for
+# standard CNPG metrics, plus kubelet_volume_stats_{available,capacity}_bytes.
+# Disabling alerts emits a deletion-only ConfigMap to remove provisioned rules.
+# Grafana loads labeled ConfigMaps (grafana_dashboard=1 / grafana_alert=1).
+# credentials:
+#   mode: static  # ESO supports static; Vault supports dynamic or static
+#   externalSecrets:
+#     selector: {provider: aws}  # optional; uses lexicon defaults when omitted
+#     remoteKey: production/postgresql  # cluster prefix; exact key for db
+#     # rotationInterval: 720h  # omit to generate once
+#
+# The selected secret-store derives the integration: operator uses Vault;
+# other providers (aws, gcp, vault, ...) use External Secrets.
+# External Secrets creates initdb/app and optional postgres passwords for
+# clusters, or a stable DatabaseRole password for db consumers. The backend
+# store and its authentication are configured independently. With dbEngine
+# disabled, external backups can use s3SecretRef + endpointURL + destinationPath.
 {}

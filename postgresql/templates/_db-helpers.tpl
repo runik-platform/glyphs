@@ -49,6 +49,31 @@ Inference (override any field by setting it on the lexicon entry):
 {{- printf "%s-%s" $cluster $identifier | lower | replace "_" "-" -}}
 {{- end -}}
 
+{{/* Select the credential integration from the existing secret-store registry.
+No provider constraint is added: runicIndexer owns selector/default behavior.
+The resolved name is used as a selector in downstream glyphs so they consume
+the same registration. Raw clusters may omit the integration entirely. */}}
+{{- define "postgresql.resolveSecretStore" -}}
+{{- $root := index . 0 -}}
+{{- $selector := default dict (index . 1) -}}
+{{- $allowMissing := index . 2 -}}
+{{- $entries := get (include "runic-system.runic-indexer" (list $root.Values.lexicon $selector "secret-store" $root.Values.chapter.name) | fromJson) "results" -}}
+{{- $store := dict -}}
+{{- $provider := "" -}}
+{{- $resolvedSelector := $selector -}}
+{{- if $entries -}}
+  {{- $store = index $entries 0 -}}
+  {{- $provider = default (default "" $store.provider) (get (default dict $store.labels) "provider") -}}
+  {{- if not $provider -}}
+    {{- fail (printf "postgresql: selected secret-store %q must declare provider in its fields or labels" $store.name) -}}
+  {{- end -}}
+  {{- $resolvedSelector = dict "name" $store.name -}}
+{{- else if not $allowMissing -}}
+  {{- fail (printf "postgresql: no matching secret-store in lexicon for selector %v" $selector) -}}
+{{- end -}}
+{{- dict "found" (gt (len $entries) 0) "store" $store "selector" $resolvedSelector "external" (and (ne $provider "") (ne $provider "operator")) | toJson -}}
+{{- end -}}
+
 {{- define "postgresql.resolveLexicon" -}}
 {{- $root := index . 0 -}}
 {{- $selector := default dict (index . 1) -}}
@@ -77,6 +102,7 @@ Inference (override any field by setting it on the lexicon entry):
       "engineDatabase" (default "postgres" $e.engineDatabase)
       "database" $database
       "vaultSecretPath" (default "" $e.vaultSecretPath)
+      "credentials" (default dict $e.credentials)
       "managerSuperuser" (eq true $e.managerSuperuser)
   | toJson -}}
 {{- end -}}

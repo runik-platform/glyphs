@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $definition := index . 1 -}}
 {{- $clusterRef := include "kafka.clusterRef" (list $root $definition "kafka.topic") | fromJson -}}
 {{- $cluster := $clusterRef.name -}}
-{{- $namespace := default $clusterRef.namespace $definition.namespace -}}
+{{- $namespace := default $clusterRef.namespace $definition.namespace }}
 ---
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaTopic

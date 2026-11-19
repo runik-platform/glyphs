@@ -32,6 +32,10 @@ Direct usage in values.yaml:
         - apiGroups: [""]
           resources: [secrets]
           verbs: [get, list]
+
+For RoleBinding/ClusterRoleBinding, serviceAccount: {} selects the spell's
+generated ServiceAccount name (including a configured name override). An
+explicit reference name wins; namespace defaults to the release namespace.
 */}}
 
 {{/* ========== ClusterRoleBinding ========== */}}
@@ -66,9 +70,9 @@ subjects:
     name: {{ . }}
     apiGroup: rbac.authorization.k8s.io
   {{- end }}
-  {{- if $glyph.serviceAccount }}
+  {{- if and (hasKey $glyph "serviceAccount") (ne (kindOf $glyph.serviceAccount) "invalid") }}
   - kind: ServiceAccount
-    name: {{ $glyph.serviceAccount.name }}
+    name: {{ default (include "common.serviceAccountName" $root) $glyph.serviceAccount.name }}
     namespace: {{ $glyph.serviceAccount.namespace | default $root.Release.Namespace }}
   {{- end }}
   {{- range $glyph.serviceAccounts }}
@@ -100,7 +104,7 @@ rules:
 {{/* ========== RoleBinding ========== */}}
 {{- define "summon.roleBinding" -}}
 {{- $root := index . 0 -}}
-{{- $glyph := index . 1 -}}
+{{- $glyph := index . 1 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -130,9 +134,9 @@ subjects:
     name: {{ . }}
     apiGroup: rbac.authorization.k8s.io
   {{- end }}
-  {{- if $glyph.serviceAccount }}
+  {{- if and (hasKey $glyph "serviceAccount") (ne (kindOf $glyph.serviceAccount) "invalid") }}
   - kind: ServiceAccount
-    name: {{ $glyph.serviceAccount.name }}
+    name: {{ default (include "common.serviceAccountName" $root) $glyph.serviceAccount.name }}
     namespace: {{ $glyph.serviceAccount.namespace | default $root.Release.Namespace }}
   {{- end }}
 roleRef:
@@ -149,7 +153,7 @@ roleRef:
 {{/* ========== Role ========== */}}
 {{- define "summon.role" -}}
 {{- $root := index . 0 -}}
-{{- $glyph := index . 1 -}}
+{{- $glyph := index . 1 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role

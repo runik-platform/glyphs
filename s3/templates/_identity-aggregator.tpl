@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 s3.identityAggregator - SHARED scaffold for S3 backend infrastructure.
 
-Every S3 backend (seaweed, versity, ...) reconciles the same thing: k8s Secrets
+S3 backend infrastructure reconciles k8s Secrets
 labelled `runik.ing/s3-identity=true` in the provider namespace (emitted by the
 `s3.bucket` glyph on the consumer side) into that backend's identity store. The
 plumbing is identical across backends:
@@ -47,6 +47,7 @@ Params (index . 1 = a dict):
 {{- $trigger := default dict $p.trigger -}}
 {{- $useWorkflow := eq (default "pod" $trigger.type) "workflow" -}}
 
+{{- if ne false $p.reconcile }}
 {{- /* EventBus discovery (default: book fallback) */}}
 {{- $eventBuses := get (include "argo-events.lexicon-index" (list $root.Values.lexicon (dict "default" "book") "event-bus" $root.Values.chapter.name) | fromJson) "results" }}
 {{- if not $eventBuses }}
@@ -58,7 +59,7 @@ Params (index . 1 = a dict):
 {{ include "argo-events.eventSource" (list $root (dict
   "name" (printf "%s-s3-secrets" $name)
   "eventBusName" $eventBus.name
-  "template" (dict "serviceAccountName" (printf "%s-s3-aggregator" $name))
+  "template" (mergeOverwrite (dict "serviceAccountName" (printf "%s-s3-aggregator" $name)) (deepCopy (default dict $p.eventSourceTemplate)))
   "resource" (dict
     "s3-identity-changes" (dict
       "namespace" $root.Release.Namespace
@@ -134,7 +135,7 @@ data:
 {{- $sensorDefinition := dict
   "name" (printf "%s-s3-aggregator" $name)
   "eventBusName" $eventBus.name
-  "template" (dict "serviceAccountName" (printf "%s-s3-aggregator" $name))
+  "template" (mergeOverwrite (dict "serviceAccountName" (printf "%s-s3-aggregator" $name)) (deepCopy (default dict $p.sensorTemplate)))
 }}
 {{- if $useWorkflow }}
   {{- $_ := set $sensorDefinition "labels" (default (dict "purpose" "s3-identity-reconciliation" "provider" $name) $trigger.sensorLabels) }}
@@ -264,6 +265,9 @@ subjects:
     namespace: {{ . }}
     {{- end }}
 
+{{- end }}
+{{- /* Keep identity-reader SA/RBAC and Vault roles when reconciliation is
+       retired. Existing VaultSecrets must keep refreshing their blue creds. */}}
 {{- /* 5. Aggregator pod SA + Role (BACKEND-SPECIFIC rules) in the provider ns */}}
 ---
 apiVersion: v1
@@ -309,16 +313,17 @@ subjects:
        can read the identity creds from Vault. */}}
 {{- $vaultServers := get (include "runic-system.runic-indexer" (list $root.Values.lexicon (dict "provider" "operator") "secret-store" $root.Values.chapter.name) | fromJson) "results" }}
 {{- $vault := index $vaultServers 0 }}
+{{- $scope := include "common.secretScope" (list $root $vault) | fromJson }}
 {{ include "vault.prolicy" (list $root (dict
   "nameOverride" (printf "%s-s3-identities" $name)
   "serviceAccount" (printf "%s-s3-aggregator-pod" $name)
   "extraPolicy" (list
-    (dict "path" (printf "%s/data/%s/+/publics/s3-identities-%s-*" $vault.secretPath $root.Values.spellbook.name $name) "capabilities" (list "read" "list"))
-    (dict "path" (printf "%s/metadata/%s/+/publics/s3-identities-%s-*" $vault.secretPath $root.Values.spellbook.name $name) "capabilities" (list "read" "list"))
-    (dict "path" (printf "%s/data/%s/+/+/publics/s3-identities-%s-*" $vault.secretPath $root.Values.spellbook.name $name) "capabilities" (list "read" "list"))
-    (dict "path" (printf "%s/metadata/%s/+/+/publics/s3-identities-%s-*" $vault.secretPath $root.Values.spellbook.name $name) "capabilities" (list "read" "list"))
-    (dict "path" (printf "%s/data/%s/+/+/+/publics/s3-identities-%s-*" $vault.secretPath $root.Values.spellbook.name $name) "capabilities" (list "read" "list"))
-    (dict "path" (printf "%s/metadata/%s/+/+/+/publics/s3-identities-%s-*" $vault.secretPath $root.Values.spellbook.name $name) "capabilities" (list "read" "list"))
+    (dict "path" (printf "%s/data%s/+/publics/s3-identities-%s-*" $vault.secretPath $scope.bookPath $name) "capabilities" (list "read" "list"))
+    (dict "path" (printf "%s/metadata%s/+/publics/s3-identities-%s-*" $vault.secretPath $scope.bookPath $name) "capabilities" (list "read" "list"))
+    (dict "path" (printf "%s/data%s/+/+/publics/s3-identities-%s-*" $vault.secretPath $scope.bookPath $name) "capabilities" (list "read" "list"))
+    (dict "path" (printf "%s/metadata%s/+/+/publics/s3-identities-%s-*" $vault.secretPath $scope.bookPath $name) "capabilities" (list "read" "list"))
+    (dict "path" (printf "%s/data%s/+/+/+/publics/s3-identities-%s-*" $vault.secretPath $scope.bookPath $name) "capabilities" (list "read" "list"))
+    (dict "path" (printf "%s/metadata%s/+/+/+/publics/s3-identities-%s-*" $vault.secretPath $scope.bookPath $name) "capabilities" (list "read" "list"))
   )
 )) }}
 ---

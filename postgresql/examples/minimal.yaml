@@ -6,12 +6,78 @@ spellbook:
 chapter:
   name: databases
 
+# Existing store registration; backend provisioning/authentication is external.
+lexicon:
+  pg-eso:
+    type: postgres
+    namespace: databases
+    credentials:
+      externalSecrets:
+        selector:
+          usage: database
+    labels:
+      backend: eso
+  platform-secrets:
+    type: secret-store
+    provider: aws
+    mode: cluster
+    labels:
+      usage: database
+      default: book
+  app-secrets:
+    type: secret-store
+    provider: aws
+    namespace: glyphs-release
+    labels:
+      usage: application
+
 glyphs:
   postgresql:
     minimal-db:
       type: cluster
       description: Minimal PostgreSQL cluster
+      # The default AWS store selects ESO without per-cluster provider flags.
       # Meta default is backup-by-default; disable here to keep the example
       # minimal (no s3-provider lexicon required for rendering).
       backup:
         enabled: false
+
+    # ESO manages both initdb/app and postgres credentials, without Vault.
+    # The referenced ClusterSecretStore is provisioned independently.
+    eso-db:
+      type: cluster
+      observability:
+        enabled: false
+      dbName: orders
+      userName: orders
+      credentials:
+        mode: static
+        externalSecrets:
+          remoteKey: example/production/orders
+      # Explicit external backup coordinates need no S3/Vault lexicon entry.
+      backup:
+        destinationPath: s3://example-backups/orders
+        endpointURL: https://s3.example.invalid
+        s3SecretRef: external-backup-credentials
+    eso-app:
+      type: db
+      clusterSelector:
+        backend: eso
+      databaseName: orders
+      credentials:
+        mode: static
+        username: orders
+        secretName: orders-db
+        externalSecrets:
+          consumerSelector:
+            usage: application
+          remoteKey: example/production/orders-app
+          # Optional rotation of a stable user; omission generates once.
+          rotationInterval: 720h
+    eso-local:
+      type: db
+      clusterSelector:
+        backend: eso
+      credentials:
+        namespace: databases
+        secretName: pg-eso-eso-local

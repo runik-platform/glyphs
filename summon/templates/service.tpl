@@ -27,16 +27,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $resourceName }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    {{- with $serviceConfig.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $serviceConfig.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- include "summon.resourceMetadata" (list $root $serviceConfig.labels $serviceConfig.annotations) | nindent 2 }}
 spec:
   type: {{ default "ClusterIP" $serviceConfig.type }}
 {{- if eq $serviceConfig.type "LoadBalancerSpecial" }}

@@ -216,7 +216,7 @@ echo "Done"
       "memory" "256Mi"
     )
   )
-  "annotations" (dict
+  "podAnnotations" (dict
     "helm.sh/hook" "post-install,post-upgrade"
     "helm.sh/hook-weight" "-5"
     "helm.sh/hook-delete-policy" "before-hook-creation"

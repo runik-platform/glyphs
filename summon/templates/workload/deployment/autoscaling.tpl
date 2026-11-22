@@ -18,16 +18,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "common.name" $root }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    {{- with $root.Values.autoscaling.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $root.Values.autoscaling.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- include "summon.resourceMetadata" (list $root $root.Values.autoscaling.labels $root.Values.autoscaling.annotations) | nindent 2 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

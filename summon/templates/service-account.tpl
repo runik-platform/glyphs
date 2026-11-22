@@ -38,16 +38,7 @@ metadata:
   {{- if $saConfig.namespace }}
   namespace: {{ $saConfig.namespace }}
   {{- end }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    {{- with $saConfig.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $saConfig.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- include "summon.resourceMetadata" (list $root $saConfig.labels $saConfig.annotations) | nindent 2 }}
 {{- if $saConfig.secret }}
 secrets:
   - name: {{ $saConfig.secret }}

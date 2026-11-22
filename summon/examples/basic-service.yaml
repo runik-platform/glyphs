@@ -3,6 +3,14 @@
 
 name: api-service
 
+labels:
+  custom:
+    example.com/team: platform
+    example.com/component: api
+annotations:
+  example.com/contact: team@example.com
+  example.com/scope: spell
+
 service:
   enabled: true
   type: ClusterIP
@@ -15,5 +23,8 @@ service:
       protocol: TCP
       name: https
       targetPort: 8443
+  labels:
+    example.com/component: ingress
   annotations:
+    example.com/scope: service
     service.beta.kubernetes.io/aws-load-balancer-type: nlb

@@ -74,16 +74,16 @@ envFrom:
   {{- end }}
 {{- range $key, $value := .Values.envs }}
 {{- if eq (kindOf $value) "string" }}
-- name: {{ $key | upper }}
+- name: {{ $key | quote }}
   value: {{ $value | quote }}
 {{- else if eq (index $value "type") "secret" }}
-- name: {{ $key | upper }}
+- name: {{ $key | quote }}
   valueFrom:
     secretKeyRef:
       name: {{ (index $value "name") }}
       key: {{ (index $value "key") }}
 {{- else if eq (index $value "type") "configMap" }}
-- name: {{ $key }}
+- name: {{ $key | quote }}
   valueFrom:
     configMapKeyRef:
       name: {{ (index $value "name") }}

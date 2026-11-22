@@ -9,16 +9,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ include "common.name" $root }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    {{- with $root.Values.workload.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $root.Values.workload.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- include "summon.resourceMetadata" (list $root $root.Values.workload.labels $root.Values.workload.annotations) | nindent 2 }}
 spec:
   schedule: {{ $root.Values.workload.schedule | quote }}
   {{- if $root.Values.workload.concurrencyPolicy }}
@@ -41,7 +32,7 @@ spec:
       template:
         metadata:
           labels:
-            {{- include "common.selectorLabels" $root | nindent 12 }}
+            {{- include "summon.pod.labels" $root | nindent 12 }}
           {{- include "summon.pod.annotations" $root | nindent 10 }}
         spec:
           serviceAccountName: {{ include "common.serviceAccountName" $root }}

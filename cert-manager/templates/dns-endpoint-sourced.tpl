@@ -166,7 +166,7 @@ echo "   Value: ${DNS_VALUE:0:100}..."
       "memory" "128Mi"
     )
   )
-  "annotations" (dict
+  "podAnnotations" (dict
     "helm.sh/hook" "post-install,post-upgrade"
     "helm.sh/hook-weight" "0"
     "helm.sh/hook-delete-policy" "before-hook-creation"

@@ -11,16 +11,7 @@ kind: Secret
 apiVersion: v1
 metadata:
   name: {{ $resourceName }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    {{- with $glyphDefinition.definition.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $glyphDefinition.definition.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- include "summon.resourceMetadata" (list $root $glyphDefinition.definition.labels $glyphDefinition.definition.annotations) | nindent 2 }}
 stringData:
 {{- $contentType := default "file" $glyphDefinition.definition.contentType }}
 {{- if eq $contentType "env" }}

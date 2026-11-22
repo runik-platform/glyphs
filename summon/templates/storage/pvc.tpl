@@ -43,16 +43,7 @@ metadata:
     {{- $pvcName = print $baseName "-" $volumeName }}
   {{- end }}
   name: {{ $pvcName }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    {{- with $volume.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $volume.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- include "summon.resourceMetadata" (list $root $volume.labels $volume.annotations) | nindent 2 }}
 spec:
   {{/* Handle PV creation - use same naming logic as PV template */}}
   {{- if $volume.pv }}

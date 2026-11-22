@@ -77,17 +77,8 @@ metadata:
     {{- $pvName = printf "%s-%s" $baseName $name }}
   {{- end }}
   name: {{ $pvName }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
-    volume: {{ $name }}
-    {{- with $volume.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with $volume.annotations }}
-  annotations:
-    {{- include "common.annotations" $root | nindent 4 }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  {{- $labels := mergeOverwrite (dict "volume" $name) (default dict $volume.labels) }}
+  {{- include "summon.resourceMetadata" (list $root $labels $volume.annotations) | nindent 2 }}
 spec:
   {{- if hasKey $volume "storageClass" }}
   storageClassName: {{ $volume.storageClass | quote }}

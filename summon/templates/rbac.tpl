@@ -47,8 +47,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ $glyph.name }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
+  {{- include "summon.resourceMetadata" (list $root $glyph.labels $glyph.annotations) | nindent 2 }}
 subjects:
   {{- if $glyph.group }}
   - kind: Group
@@ -95,8 +94,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ $glyph.name }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
+  {{- include "summon.resourceMetadata" (list $root $glyph.labels $glyph.annotations) | nindent 2 }}
 rules:
   {{- toYaml $glyph.rules | nindent 2 }}
 {{- end }}
@@ -111,8 +109,7 @@ kind: RoleBinding
 metadata:
   name: {{ $glyph.name }}
   namespace: {{ $glyph.namespace | default $root.Release.Namespace }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
+  {{- include "summon.resourceMetadata" (list $root $glyph.labels $glyph.annotations) | nindent 2 }}
 subjects:
   {{- if $glyph.group }}
   - kind: Group
@@ -160,8 +157,7 @@ kind: Role
 metadata:
   name: {{ $glyph.name }}
   namespace: {{ $glyph.namespace | default $root.Release.Namespace }}
-  labels:
-    {{- include "common.all.labels" $root | nindent 4 }}
+  {{- include "summon.resourceMetadata" (list $root $glyph.labels $glyph.annotations) | nindent 2 }}
 rules:
   {{- toYaml $glyph.rules | nindent 2 }}
 {{- end }}
